@@ -1,9 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Button } from '../../components/ui/Button.jsx'
 import { TextField } from '../../components/ui/FormFields.jsx'
 import { Notice } from '../../components/ui/Notice.jsx'
-import { APP_NAME } from '../../config/appConfig.js'
 import { useSession } from '../../context/SessionContext.jsx'
 import { DEFAULT_THRESHOLDS, validateThresholds } from '../../domain/traffic.js'
 import {
@@ -12,35 +11,30 @@ import {
 } from '../../services/adminService.js'
 import { getTrafficThresholds } from '../../services/settingsService.js'
 import { IotDevicesSection } from './IotDevicesSection.jsx'
+import { useAsyncAction } from '../../utils/useAsyncAction.js'
+import { useDocumentTitle } from '../../utils/useDocumentTitle.js'
 
 function ThresholdsForm({ current }) {
   const { account } = useSession()
   const queryClient = useQueryClient()
   const [freeFrom, setFreeFrom] = useState(String(current.freeFrom))
   const [heavyBelow, setHeavyBelow] = useState(String(current.heavyBelow))
-  const [error, setError] = useState(null)
   const [feedback, setFeedback] = useState(null)
-  const [busy, setBusy] = useState(false)
+  const { busy, error, setError, run } = useAsyncAction()
 
   const numbers = { freeFrom: Number(freeFrom), heavyBelow: Number(heavyBelow) }
   const isDefault =
     current.freeFrom === DEFAULT_THRESHOLDS.freeFrom &&
     current.heavyBelow === DEFAULT_THRESHOLDS.heavyBelow
 
-  async function run(action, message) {
-    setBusy(true)
-    setError(null)
+  async function apply(action, message) {
     setFeedback(null)
-    try {
+    await run(async () => {
       await action()
       setFeedback(message)
       // o mapa de todos os municípios depende destes limites
       await queryClient.invalidateQueries()
-    } catch (e) {
-      setError(e.message)
-    } finally {
-      setBusy(false)
-    }
+    })
   }
 
   function submit(event) {
@@ -51,14 +45,14 @@ function ThresholdsForm({ current }) {
       setError(problem)
       return
     }
-    run(
+    apply(
       () => updateTrafficThresholds({ admin: account, ...numbers }),
       'Limites salvos. O mapa já usa os novos valores.',
     )
   }
 
   async function restore() {
-    await run(() => restoreTrafficThresholds(account), 'Limites padrão restaurados.')
+    await apply(() => restoreTrafficThresholds(account), 'Limites padrão restaurados.')
     setFreeFrom(String(DEFAULT_THRESHOLDS.freeFrom))
     setHeavyBelow(String(DEFAULT_THRESHOLDS.heavyBelow))
   }
@@ -127,9 +121,7 @@ function ThresholdsForm({ current }) {
 
 /** Parâmetros ajustáveis do protótipo: hoje, os limites que classificam o trânsito. */
 export function AdminSettingsPage() {
-  useEffect(() => {
-    document.title = `Parâmetros · Painel · ${APP_NAME}`
-  }, [])
+  useDocumentTitle('Parâmetros · Painel')
   const query = useQuery({
     queryKey: ['admin', 'thresholds'],
     queryFn: async () => getTrafficThresholds(),

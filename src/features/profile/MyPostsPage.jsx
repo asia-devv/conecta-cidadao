@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Page } from '../../components/layout/Page.jsx'
 import { PostListItem } from '../../components/post/PostListItem.jsx'
 import { EmptyIllustration } from '../../components/illustrations/Illustrations.jsx'
-import { EmptyState, ErrorState, Skeleton } from '../../components/ui/States.jsx'
+import { EmptyState, ErrorState, LoadingSkeleton } from '../../components/ui/States.jsx'
 import { useClock } from '../../context/ClockContext.jsx'
 import { useSession } from '../../context/SessionContext.jsx'
 import { listPostsByAuthor } from '../../services/postService.js'
@@ -29,11 +29,11 @@ export function MyPostsPage() {
       backLabel="Voltar ao perfil"
     >
       {query.isPending && (
-        <div aria-busy="true" className="flex flex-col gap-4">
-          <span className="sr-only">Carregando…</span>
-          <Skeleton className="h-40 w-full" />
-          <Skeleton className="h-40 w-full" />
-        </div>
+        <LoadingSkeleton
+          count={2}
+          itemClassName="h-40 w-full"
+          className="flex flex-col gap-4"
+        />
       )}
       {query.isError && (
         <ErrorState

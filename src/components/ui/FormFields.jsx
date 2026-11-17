@@ -8,6 +8,16 @@ import { useId } from 'react'
  * `{...register('campo')}` entrega name, onChange, onBlur e ref, que vão direto
  * para o elemento (em React 19 o `ref` chega como propriedade comum).
  */
+/** Mensagem de erro de um campo, anunciada na hora por leitores de tela. */
+export function FieldError({ id, message }) {
+  if (!message) return null
+  return (
+    <p id={id} role="alert" className="text-sm font-bold text-danger-ink">
+      {message}
+    </p>
+  )
+}
+
 function FieldShell({ id, label, hint, error, required, children }) {
   const hintId = `${id}-hint`
   const errorId = `${id}-error`
@@ -28,31 +38,19 @@ function FieldShell({ id, label, hint, error, required, children }) {
         'aria-describedby':
           [hint && hintId, error && errorId].filter(Boolean).join(' ') || undefined,
       })}
-      {error && (
-        <p id={errorId} role="alert" className="text-sm font-bold text-danger-ink">
-          {error}
-        </p>
-      )}
+      <FieldError id={errorId} message={error} />
     </div>
   )
 }
 
 const CONTROL =
-  'hairline min-h-(--tap-min) w-full rounded-control bg-surface px-3.5 py-2 text-ink placeholder:text-ink-muted aria-[invalid=true]:border-danger aria-[invalid=true]:border-2'
-const BORDER = 'border-line-strong'
+  'hairline min-h-(--tap-min) w-full rounded-control border-line-strong bg-surface px-3.5 py-2 text-ink placeholder:text-ink-muted aria-[invalid=true]:border-danger aria-[invalid=true]:border-2'
 
 export function TextField({ label, hint, error, required, ...props }) {
   const id = useId()
   return (
     <FieldShell id={id} label={label} hint={hint} error={error} required={required}>
-      {(a11y) => (
-        <input
-          required={required}
-          className={`${CONTROL} ${BORDER}`}
-          {...a11y}
-          {...props}
-        />
-      )}
+      {(a11y) => <input required={required} className={CONTROL} {...a11y} {...props} />}
     </FieldShell>
   )
 }
@@ -65,7 +63,7 @@ export function TextAreaField({ label, hint, error, required, rows = 4, ...props
         <textarea
           required={required}
           rows={rows}
-          className={`${CONTROL} ${BORDER} resize-y`}
+          className={`${CONTROL} resize-y`}
           {...a11y}
           {...props}
         />
@@ -79,12 +77,7 @@ export function SelectField({ label, hint, error, required, children, ...props }
   return (
     <FieldShell id={id} label={label} hint={hint} error={error} required={required}>
       {(a11y) => (
-        <select
-          required={required}
-          className={`${CONTROL} ${BORDER}`}
-          {...a11y}
-          {...props}
-        >
+        <select required={required} className={CONTROL} {...a11y} {...props}>
           {children}
         </select>
       )}
@@ -111,11 +104,7 @@ export function CheckboxField({ label, error, ...props }) {
           {label}
         </label>
       </div>
-      {error && (
-        <p id={errorId} role="alert" className="text-sm font-bold text-danger-ink">
-          {error}
-        </p>
-      )}
+      <FieldError id={errorId} message={error} />
     </div>
   )
 }

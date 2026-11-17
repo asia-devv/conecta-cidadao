@@ -6,6 +6,7 @@ import { BottomSheet } from './BottomSheet.jsx'
 import { ErrorBoundary } from './ErrorBoundary.jsx'
 import { PostCard } from './PostCard.jsx'
 import { SourceBadge } from './SourceBadge.jsx'
+import { LoadingSkeleton } from './States.jsx'
 import { StatusTimeline } from './StatusTimeline.jsx'
 import { ToastProvider, useToast } from './Toast.jsx'
 import { TrafficBadge } from './TrafficBadge.jsx'
@@ -273,5 +274,15 @@ describe('ErrorBoundary', () => {
       </ErrorBoundary>,
     )
     expect(screen.getByText('tudo certo')).toBeInTheDocument()
+  })
+})
+
+describe('LoadingSkeleton', () => {
+  it('marca a região como ocupada, anuncia o texto e desenha os blocos pedidos', () => {
+    const { container } = render(<LoadingSkeleton label="Carregando a fila…" count={4} />)
+    const region = container.firstChild
+    expect(region).toHaveAttribute('aria-busy', 'true')
+    expect(screen.getByText('Carregando a fila…')).toHaveClass('sr-only')
+    expect(region.querySelectorAll('[aria-hidden="true"]')).toHaveLength(4)
   })
 })

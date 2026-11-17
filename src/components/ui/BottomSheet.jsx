@@ -62,6 +62,8 @@ export function BottomSheet({ open, onClose, title, children }) {
         onClick={onClose}
         className="absolute inset-0 bg-ink/50 motion-safe:animate-[fade-in_0.2s_ease-out]"
       />
+      {/* O diálogo precisa ouvir o teclado: Esc fecha e Tab fica preso no painel. */}
+      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
       <div
         ref={panelRef}
         role="dialog"

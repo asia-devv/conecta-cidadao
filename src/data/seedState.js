@@ -1,5 +1,6 @@
 import { HOURS } from '../domain/relativeTime.js'
 import { STATE_ALERT_TARGETS, generateSeedCity } from './seedCity.js'
+import { APP_NAME } from '../config/appConfig.js'
 
 /**
  * Conteúdo estadual fictício: alertas, notícias e eventos.
@@ -86,7 +87,7 @@ const NEWS = [
     'A ação preventiva, anunciada antes do período de chuvas, amplia o número de bairros atendidos.',
     [
       'A programação do mutirão foi ampliada e agora inclui bairros de mais municípios. Equipes percorrem as ruas retirando folhas e lixo das bocas de lobo.',
-      'Moradores podem ajudar não jogando lixo na rua e avisando, pelo Nossa Rua, quando um bueiro estiver entupido.',
+      `Moradores podem ajudar não jogando lixo na rua e avisando, pelo ${APP_NAME}, quando um bueiro estiver entupido.`,
     ],
   ],
   [

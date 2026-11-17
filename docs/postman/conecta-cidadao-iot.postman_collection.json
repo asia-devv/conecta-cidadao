@@ -1,8 +1,8 @@
 {
   "info": {
-    "name": "Nossa Rua · Sensores de trânsito (FIWARE)",
+    "name": "Conecta Cidadão · Sensores de trânsito (FIWARE)",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "description": "Sensores de velocidade média do app Nossa Rua no FIWARE (Orion + IoT Agent UltraLight/MQTT), no mesmo padrão do projeto Vinheria-Full.\n\nPreencha as variáveis fiware_ip (IPv4 do servidor), sensor_id (ex.: 001), segment_id (via simulada, ex.: sao-paulo-s1), road_name e max_speed.\n\nOrdem sugerida: 1 → 2 → 3 → 4 (ou publique por MQTT) → 5. Os dispositivos de verdade publicam por MQTT em /TEF/traffic{{sensor_id}}/attrs com a mensagem v|<km/h>."
+    "description": "Sensores de velocidade média do app Conecta Cidadão no FIWARE (Orion + IoT Agent UltraLight/MQTT), no mesmo padrão do projeto Vinheria-Full.\n\nPreencha as variáveis fiware_ip (IPv4 do servidor), sensor_id (ex.: 001), segment_id (via simulada, ex.: sao-paulo-s1), road_name e max_speed.\n\nOrdem sugerida: 1 → 2 → 3 → 4 (ou publique por MQTT) → 5. Os dispositivos de verdade publicam por MQTT em /TEF/traffic{{sensor_id}}/attrs com a mensagem v|<km/h>."
   },
   "variable": [
     {

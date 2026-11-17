@@ -1,4 +1,5 @@
 import { getCity } from './places.js'
+import { APP_NAME } from '../config/appConfig.js'
 
 /**
  * Gera um arquivo de calendário (.ics, RFC 5545) para um evento, para a pessoa
@@ -59,13 +60,13 @@ export function buildIcs(event, now) {
     event.summary,
     '',
     `Organização: ${event.source.name}.`,
-    'Evento fictício criado para a demonstração do protótipo Nossa Rua.',
+    `Evento fictício criado para a demonstração do protótipo ${APP_NAME}.`,
   ].join('\n')
 
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Nossa Rua//Prototipo//PT-BR',
+    'PRODID:-//Conecta Cidadao//Prototipo//PT-BR',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
     'BEGIN:VEVENT',

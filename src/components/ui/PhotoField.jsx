@@ -1,7 +1,9 @@
-import { useEffect, useId, useRef, useState } from 'react'
+import { useId, useRef, useState } from 'react'
 import { Camera, Trash2 } from 'lucide-react'
 import { compressImage } from '../../utils/image.js'
+import { useObjectUrl } from '../../utils/useObjectUrl.js'
 import { Button } from './Button.jsx'
+import { FieldError } from './FormFields.jsx'
 
 /**
  * Campo de foto. A imagem escolhida é reduzida e regravada como JPEG sem
@@ -13,21 +15,9 @@ import { Button } from './Button.jsx'
 export function PhotoField({ value, onChange, label = 'Foto', required, hint, error }) {
   const id = useId()
   const inputRef = useRef(null)
-  const [preview, setPreview] = useState(null)
+  const preview = useObjectUrl(value)
   const [busy, setBusy] = useState(false)
   const [readError, setReadError] = useState(null)
-
-  useEffect(() => {
-    if (!value) {
-      // Sincroniza com um recurso externo (URL de objeto do navegador): setState no efeito é intencional.
-      // oxlint-disable-next-line react/set-state-in-effect
-      setPreview(null)
-      return undefined
-    }
-    const url = URL.createObjectURL(value)
-    setPreview(url)
-    return () => URL.revokeObjectURL(url)
-  }, [value])
 
   async function onFile(event) {
     const file = event.target.files?.[0]
@@ -95,11 +85,7 @@ export function PhotoField({ value, onChange, label = 'Foto', required, hint, er
           </Button>
         )}
       </div>
-      {message && (
-        <p id={`${id}-error`} role="alert" className="text-sm font-bold text-danger-ink">
-          {message}
-        </p>
-      )}
+      <FieldError id={`${id}-error`} message={message} />
     </div>
   )
 }

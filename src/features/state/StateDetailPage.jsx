@@ -1,9 +1,7 @@
-import { useEffect } from 'react'
-import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { ArrowLeft, CalendarPlus, Map as MapIcon, Share2 } from 'lucide-react'
+import { CalendarPlus, Map as MapIcon, Share2 } from 'lucide-react'
 import { Button } from '../../components/ui/Button.jsx'
-import { Icon } from '../../components/ui/Icon.jsx'
 import { Notice } from '../../components/ui/Notice.jsx'
 import { ErrorState, Skeleton } from '../../components/ui/States.jsx'
 import { useToast } from '../../components/ui/Toast.jsx'
@@ -17,6 +15,8 @@ import { downloadIcs } from '../../utils/download.js'
 import { shareLink } from '../../utils/share.js'
 import { StateItem } from '../../components/state/StateItem.jsx'
 import { useSaveEvent } from './useSaveEvent.js'
+import { useDocumentTitle } from '../../utils/useDocumentTitle.js'
+import { BackLink } from '../../components/layout/BackLink.jsx'
 
 const SHARE_MESSAGES = {
   copied: 'Link copiado.',
@@ -42,9 +42,7 @@ export function StateDetailPage() {
   })
   const item = query.data
 
-  useEffect(() => {
-    document.title = `${item?.title ?? 'Estado'} · ${APP_NAME}`
-  }, [item?.title])
+  useDocumentTitle(item?.title ?? 'Estado')
 
   async function handleShare() {
     const result = await shareLink({
@@ -65,13 +63,7 @@ export function StateDetailPage() {
 
   return (
     <div className="flex flex-col gap-5 px-4 pt-3 pb-8">
-      <Link
-        to={base}
-        className="inline-flex min-h-(--tap-min) w-fit items-center gap-1.5 rounded-control pr-2 font-bold text-primary"
-      >
-        <Icon icon={ArrowLeft} />
-        {fromHome ? 'Voltar ao início' : 'Voltar ao estado'}
-      </Link>
+      <BackLink to={base}>{fromHome ? 'Voltar ao início' : 'Voltar ao estado'}</BackLink>
 
       {query.isPending && (
         <div aria-busy="true" className="flex flex-col gap-3">

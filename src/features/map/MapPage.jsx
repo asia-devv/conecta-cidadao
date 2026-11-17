@@ -1,18 +1,18 @@
 import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react'
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { Page } from '../../components/layout/Page.jsx'
 import { Chip } from '../../components/ui/Chip.jsx'
 import { Notice } from '../../components/ui/Notice.jsx'
 import { SimulatedBadge } from '../../components/ui/SimulatedBadge.jsx'
-import { ErrorState, Skeleton } from '../../components/ui/States.jsx'
+import { ErrorState, LoadingSkeleton, Skeleton } from '../../components/ui/States.jsx'
 import { useToast } from '../../components/ui/Toast.jsx'
 import { useClock } from '../../context/ClockContext.jsx'
 import { useSession } from '../../context/SessionContext.jsx'
+import { useAccountGate } from '../../context/useAccountGate.js'
 import { RAIL_LINES, RAIL_STATIONS, RAIL_TRANSFERS } from '../../data/railNetwork.js'
 import { SAFE_PLACES } from '../../data/safePlaces.js'
 import { MOBILITY_CITIES, neighborhoodCenter } from '../../data/seedMobility.js'
-import { can } from '../../domain/account.js'
 import { cityIdOf, getCity, getNeighborhood } from '../../domain/places.js'
 import { alternativeRoutes } from '../../domain/rail.js'
 import { nearestSafePlaces } from '../../domain/safePlaces.js'
@@ -101,8 +101,7 @@ export function MapPage() {
   const { account, updateAccount } = useSession()
   const { offsetMs } = useClock()
   const toast = useToast()
-  const navigate = useNavigate()
-  const location = useLocation()
+  const gate = useAccountGate()
   const [params, setParams] = useSearchParams()
   const alertId = params.get('alerta')
 
@@ -162,15 +161,17 @@ export function MapPage() {
           selectedRouteIndex,
         }
       : null
+  // O mapa só redesenha a camada de trilhos quando a lista de favoritas muda de
+  // conteúdo, não a cada novo objeto de conta.
+  const favoritesKey = favorites.join(',')
   const rail = useMemo(
     () => ({
       lines: RAIL_LINES,
       stations: RAIL_STATIONS,
       selectedLineId: selectedRailLineId,
-      favorites,
+      favorites: favoritesKey ? favoritesKey.split(',') : [],
     }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [selectedRailLineId, favorites.join(',')],
+    [selectedRailLineId, favoritesKey],
   )
 
   function changeCity(id) {
@@ -186,12 +187,7 @@ export function MapPage() {
   }
 
   async function toggleFavorite(stationId) {
-    if (!account) {
-      toast.show('Entre para favoritar estações.', { tone: 'info' })
-      navigate('/entrar', { state: { from: location } })
-      return
-    }
-    if (!can(account, 'favorite_station')) return
+    if (!gate('favorite_station', { guest: 'Entre para favoritar estações.' })) return
     const added = !favorites.includes(stationId)
     setPendingStationId(stationId)
     try {
@@ -263,14 +259,7 @@ export function MapPage() {
         ))}
       </div>
 
-      {query.isPending && (
-        <div aria-busy="true" className="flex flex-col gap-3">
-          <span className="sr-only">Carregando o mapa…</span>
-          {[0, 1, 2].map((i) => (
-            <Skeleton key={i} className="h-28 w-full" />
-          ))}
-        </div>
-      )}
+      {query.isPending && <LoadingSkeleton label="Carregando o mapa…" />}
       {query.isError && !snapshot && (
         <ErrorState
           title="Não foi possível carregar a mobilidade"

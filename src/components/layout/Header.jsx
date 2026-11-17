@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { APP_NAME } from '../../config/appConfig.js'
 import { Logo } from './Logo.jsx'
 
 /**
@@ -11,7 +12,7 @@ export function Header() {
     <header className="flex shrink-0 items-center justify-between bg-canvas px-4 pt-[max(env(safe-area-inset-top),0.5rem)] pb-2 frame:pt-12">
       <Link
         to="/inicio"
-        aria-label="Nossa Rua, ir para o início"
+        aria-label={`${APP_NAME}, ir para o início`}
         className="rounded-control"
       >
         <Logo />

@@ -1,17 +1,15 @@
-import { useEffect } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { ArrowLeft } from 'lucide-react'
-import { Icon } from '../../components/ui/Icon.jsx'
 import { Notice } from '../../components/ui/Notice.jsx'
 import { ErrorState, Skeleton } from '../../components/ui/States.jsx'
 import { StatusTimeline } from '../../components/ui/StatusTimeline.jsx'
-import { APP_NAME } from '../../config/appConfig.js'
 import { useClock } from '../../context/ClockContext.jsx'
 import { useSession } from '../../context/SessionContext.jsx'
 import { getPost } from '../../services/postService.js'
 import { PostListItem } from '../../components/post/PostListItem.jsx'
 import { useSupport } from './useSupport.js'
+import { useDocumentTitle } from '../../utils/useDocumentTitle.js'
+import { BackLink } from '../../components/layout/BackLink.jsx'
 
 /** Quem responde pelo relato: órgão, prefeitura e vereador(a) de referência (fictícios). */
 function Responsible({ responsible }) {
@@ -62,19 +60,11 @@ export function PostDetailPage() {
     ? { to: '/perfil/publicacoes', label: 'Voltar aos meus relatos' }
     : { to: '/inicio', label: 'Voltar ao início' }
 
-  useEffect(() => {
-    document.title = `${post?.title ?? 'Publicação'} · ${APP_NAME}`
-  }, [post?.title])
+  useDocumentTitle(post?.title ?? 'Publicação')
 
   return (
     <div className="flex flex-col gap-5 px-4 pt-3 pb-8">
-      <Link
-        to={back.to}
-        className="inline-flex min-h-(--tap-min) w-fit items-center gap-1.5 rounded-control pr-2 font-bold text-primary"
-      >
-        <Icon icon={ArrowLeft} />
-        {back.label}
-      </Link>
+      <BackLink to={back.to}>{back.label}</BackLink>
 
       {query.isPending && (
         <div aria-busy="true" className="flex flex-col gap-3">

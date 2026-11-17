@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Controller, useForm, useWatch } from 'react-hook-form'
@@ -7,7 +7,6 @@ import { SelectField, TextAreaField, TextField } from '../../components/ui/FormF
 import { Notice } from '../../components/ui/Notice.jsx'
 import { PlaceSelect } from '../../components/ui/PlaceSelect.jsx'
 import { EmptyState, ErrorState, Skeleton } from '../../components/ui/States.jsx'
-import { APP_NAME } from '../../config/appConfig.js'
 import { useSession } from '../../context/SessionContext.jsx'
 import {
   NOTICE_DESCRIPTION_MAX,
@@ -22,6 +21,7 @@ import {
   publishNotice,
   retireNotice,
 } from '../../services/adminService.js'
+import { useDocumentTitle } from '../../utils/useDocumentTitle.js'
 
 const EMPTY = {
   level: 'info',
@@ -175,9 +175,7 @@ export function NoticesPage() {
     queryFn: () => listAdminNotices(account),
   })
 
-  useEffect(() => {
-    document.title = `Avisos · Painel · ${APP_NAME}`
-  }, [])
+  useDocumentTitle('Avisos · Painel')
 
   async function remove(notice) {
     setRemoveError(null)

@@ -1,6 +1,6 @@
-import { HandHeart, Lightbulb } from 'lucide-react'
-import { Button } from '../../components/ui/Button.jsx'
+import { Lightbulb } from 'lucide-react'
 import { StatusBadge } from '../../components/ui/StatusBadge.jsx'
+import { SupportButton } from '../../components/ui/SupportButton.jsx'
 import { formatRelative } from '../../domain/relativeTime.js'
 
 /**
@@ -39,15 +39,12 @@ export function SimilarReports({ reports, now, accountId, pendingId, onSupport }
               {report.authorId === accountId ? (
                 <span className="text-sm font-bold text-ink">Seu relato</span>
               ) : (
-                <Button
-                  variant={report.supported ? 'primary' : 'secondary'}
-                  icon={HandHeart}
-                  aria-pressed={report.supported}
-                  disabled={pendingId === report.id}
+                <SupportButton
+                  supported={report.supported}
+                  supports={report.supports}
+                  pending={pendingId === report.id}
                   onClick={() => onSupport(report)}
-                >
-                  {report.supported ? 'Apoiado' : 'Apoiar'} · {report.supports}
-                </Button>
+                />
               )}
             </div>
           </li>

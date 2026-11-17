@@ -5,6 +5,7 @@ import { Header } from './Header.jsx'
 import { StorageNotice } from './StorageNotice.jsx'
 import { RouteFallback } from './RouteFallback.jsx'
 import { useRouteFocus } from './useRouteFocus.js'
+import { SkipLink } from './SkipLink.jsx'
 
 /**
  * Estrutura de toda tela do app: cabeçalho, conteúdo rolável e navegação inferior.
@@ -16,12 +17,7 @@ export function AppShell() {
   useRouteFocus(mainRef)
   return (
     <>
-      <a
-        href="#conteudo"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded-control focus:bg-primary focus:px-4 focus:py-2 focus:font-bold focus:text-on-primary"
-      >
-        Pular para o conteúdo
-      </a>
+      <SkipLink />
       <Header />
       <main
         ref={mainRef}

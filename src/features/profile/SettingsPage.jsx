@@ -45,7 +45,7 @@ export function SettingsPage() {
   async function onExport() {
     setError(null)
     try {
-      downloadJson(await exportAccountData(), 'nossa-rua-meus-dados.json')
+      downloadJson(await exportAccountData(), 'conecta-cidadao-meus-dados.json')
     } catch (e) {
       setError(e.message)
     }
