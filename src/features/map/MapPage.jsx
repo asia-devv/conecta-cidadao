@@ -161,15 +161,17 @@ export function MapPage() {
           selectedRouteIndex,
         }
       : null
+  // O mapa só redesenha a camada de trilhos quando a lista de favoritas muda de
+  // conteúdo, não a cada novo objeto de conta.
+  const favoritesKey = favorites.join(',')
   const rail = useMemo(
     () => ({
       lines: RAIL_LINES,
       stations: RAIL_STATIONS,
       selectedLineId: selectedRailLineId,
-      favorites,
+      favorites: favoritesKey ? favoritesKey.split(',') : [],
     }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [selectedRailLineId, favorites.join(',')],
+    [selectedRailLineId, favoritesKey],
   )
 
   function changeCity(id) {
