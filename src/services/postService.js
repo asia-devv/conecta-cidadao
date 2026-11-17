@@ -7,6 +7,7 @@ import { findSimilarReports } from '../domain/similarity.js'
 import { buildTimeline } from '../domain/reportTimeline.js'
 import { generateSeedPosts } from '../data/seedPosts.js'
 import { createId } from '../utils/id.js'
+import { toggleItem } from '../utils/list.js'
 import { clock } from './clock.js'
 import { deleteImages, saveImage } from './imageStore.js'
 import { wait } from './latency.js'
@@ -115,9 +116,7 @@ export async function toggleSupport({ postId, accountId }) {
   }
   const map = readSupports()
   const current = map[postId] ?? []
-  const next = current.includes(accountId)
-    ? current.filter((id) => id !== accountId)
-    : [...current, accountId]
+  const next = toggleItem(current, accountId)
   const saved = storage.write(SUPPORTS_KEY, { ...map, [postId]: next })
   if (!saved) {
     throw new ServiceError(

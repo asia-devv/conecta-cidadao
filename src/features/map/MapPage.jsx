@@ -19,6 +19,7 @@ import { nearestSafePlaces } from '../../domain/safePlaces.js'
 import { getAlert } from '../../services/alertService.js'
 import { getMobilitySnapshot } from '../../services/mobilityService.js'
 import { formatClock } from '../../utils/format.js'
+import { toggleItem } from '../../utils/list.js'
 import { AlertDetails, AlertHeader } from './AlertPanel.jsx'
 import { BusPanel } from './BusPanel.jsx'
 import { MapLegend } from './MapLegend.jsx'
@@ -195,9 +196,7 @@ export function MapPage() {
     setPendingStationId(stationId)
     try {
       await updateAccount({
-        favoriteStations: added
-          ? [...favorites, stationId]
-          : favorites.filter((id) => id !== stationId),
+        favoriteStations: toggleItem(favorites, stationId),
       })
       toast.show(added ? 'Estação favoritada' : 'Estação removida das favoritas', {
         tone: 'success',

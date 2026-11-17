@@ -4,6 +4,7 @@ import { clock } from './clock.js'
 import { cachedBySeedEpoch } from './seedEpoch.js'
 import { ServiceError } from './ServiceError.js'
 import { storage } from './storage.js'
+import { toggleItem } from '../utils/list.js'
 
 /**
  * Feed estadual: alertas, notícias e eventos. Todo o conteúdo vem do seed
@@ -52,9 +53,7 @@ export async function toggleSavedEvent({ eventId, accountId }) {
   }
   const map = readSaved()
   const current = map[accountId] ?? []
-  const next = current.includes(eventId)
-    ? current.filter((id) => id !== eventId)
-    : [...current, eventId]
+  const next = toggleItem(current, eventId)
   const updated = { ...map, [accountId]: next }
   if (!storage.write(SAVED_KEY, updated)) {
     throw new ServiceError(
