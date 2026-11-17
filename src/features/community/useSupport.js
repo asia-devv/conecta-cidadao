@@ -1,8 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useLocation, useNavigate } from 'react-router-dom'
 import { useToast } from '../../components/ui/Toast.jsx'
-import { useSession } from '../../context/SessionContext.jsx'
-import { can } from '../../domain/account.js'
+import { useAccountGate } from '../../context/useAccountGate.js'
 import { toggleSupport } from '../../services/postService.js'
 
 /**
@@ -12,9 +10,7 @@ import { toggleSupport } from '../../services/postService.js'
  *  - morador: apoia ou retira o apoio.
  */
 export function useSupport() {
-  const { account } = useSession()
-  const navigate = useNavigate()
-  const location = useLocation()
+  const gate = useAccountGate()
   const toast = useToast()
   const queryClient = useQueryClient()
 
@@ -28,16 +24,11 @@ export function useSupport() {
   return {
     pendingId: mutation.isPending ? mutation.variables.postId : null,
     toggle(post) {
-      if (!account) {
-        toast.show('Entre para apoiar relatos.', { tone: 'info' })
-        navigate('/entrar', { state: { from: location } })
-        return
-      }
-      if (!can(account, 'support')) {
-        toast.show('Só contas de morador apoiam relatos.', { tone: 'info' })
-        return
-      }
-      mutation.mutate({ postId: post.id, accountId: account.id })
+      const account = gate('support', {
+        guest: 'Entre para apoiar relatos.',
+        denied: 'Só contas de morador apoiam relatos.',
+      })
+      if (account) mutation.mutate({ postId: post.id, accountId: account.id })
     },
   }
 }

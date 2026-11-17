@@ -1,5 +1,5 @@
 import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react'
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { Page } from '../../components/layout/Page.jsx'
 import { Chip } from '../../components/ui/Chip.jsx'
@@ -9,10 +9,10 @@ import { ErrorState, LoadingSkeleton, Skeleton } from '../../components/ui/State
 import { useToast } from '../../components/ui/Toast.jsx'
 import { useClock } from '../../context/ClockContext.jsx'
 import { useSession } from '../../context/SessionContext.jsx'
+import { useAccountGate } from '../../context/useAccountGate.js'
 import { RAIL_LINES, RAIL_STATIONS, RAIL_TRANSFERS } from '../../data/railNetwork.js'
 import { SAFE_PLACES } from '../../data/safePlaces.js'
 import { MOBILITY_CITIES, neighborhoodCenter } from '../../data/seedMobility.js'
-import { can } from '../../domain/account.js'
 import { cityIdOf, getCity, getNeighborhood } from '../../domain/places.js'
 import { alternativeRoutes } from '../../domain/rail.js'
 import { nearestSafePlaces } from '../../domain/safePlaces.js'
@@ -101,8 +101,7 @@ export function MapPage() {
   const { account, updateAccount } = useSession()
   const { offsetMs } = useClock()
   const toast = useToast()
-  const navigate = useNavigate()
-  const location = useLocation()
+  const gate = useAccountGate()
   const [params, setParams] = useSearchParams()
   const alertId = params.get('alerta')
 
@@ -186,12 +185,7 @@ export function MapPage() {
   }
 
   async function toggleFavorite(stationId) {
-    if (!account) {
-      toast.show('Entre para favoritar estações.', { tone: 'info' })
-      navigate('/entrar', { state: { from: location } })
-      return
-    }
-    if (!can(account, 'favorite_station')) return
+    if (!gate('favorite_station', { guest: 'Entre para favoritar estações.' })) return
     const added = !favorites.includes(stationId)
     setPendingStationId(stationId)
     try {
