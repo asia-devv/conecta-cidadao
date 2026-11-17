@@ -12,7 +12,7 @@ import { EmptyState, ErrorState, Skeleton } from '../../components/ui/States.jsx
 import { useClock } from '../../context/ClockContext.jsx'
 import { useSession } from '../../context/SessionContext.jsx'
 import { buildCityFeed, mapLinkFor, noticeToAlert } from '../../domain/cityFeed.js'
-import { CITIES, getCity } from '../../domain/places.js'
+import { CITIES, cityIdOf, getCity } from '../../domain/places.js'
 import { cityIdsOf } from '../../domain/stateFeed.js'
 import { listPosts } from '../../services/postService.js'
 import { listStateItems } from '../../services/stateService.js'
@@ -60,7 +60,7 @@ export function CityFeedPage() {
   const neighborhoodIds = account
     ? (account.followedPlaces ?? [])
         .map((f) => f.neighborhoodId)
-        .filter((id) => cityIds.includes(id.split('/')[0]))
+        .filter((id) => cityIds.includes(cityIdOf(id)))
     : cityIds.flatMap((id) => getCity(id)?.neighborhoods.map((n) => n.id) ?? [])
 
   const query = useQuery({

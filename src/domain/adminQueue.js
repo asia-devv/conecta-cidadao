@@ -1,3 +1,5 @@
+import { cityIdOf } from './places.js'
+
 /** Filtros da fila de ocorrências. `items` já têm `priority` (ver priority.js). */
 
 export const QUEUE_STATES = [
@@ -14,7 +16,7 @@ export function filterAdminReports(
     if (state === 'open' && item.priority.closed) return false
     if (state === 'closed' && !item.priority.closed) return false
     if (level !== 'all' && item.priority.level !== level) return false
-    if (cityId !== 'all' && item.neighborhoodId.split('/')[0] !== cityId) return false
+    if (cityId !== 'all' && cityIdOf(item.neighborhoodId) !== cityId) return false
     if (category !== 'all' && item.category !== category) return false
     return true
   })

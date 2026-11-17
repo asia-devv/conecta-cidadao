@@ -68,6 +68,10 @@ export const getNeighborhood = (id) => NEIGHBORHOODS_BY_ID.get(id) ?? null
 
 export const getCity = (id) => CITIES.find((city) => city.id === id) ?? null
 
+/** Município de um bairro: "sao-paulo/pinheiros" → "sao-paulo". Sem bairro, null. */
+export const cityIdOf = (neighborhoodId) =>
+  neighborhoodId ? neighborhoodId.split('/')[0] : null
+
 /** "Pinheiros · São Paulo". Devolve texto vazio para id desconhecido. */
 export function formatPlace(id) {
   const n = getNeighborhood(id)

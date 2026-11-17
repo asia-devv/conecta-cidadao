@@ -13,7 +13,7 @@ import { RAIL_LINES, RAIL_STATIONS, RAIL_TRANSFERS } from '../../data/railNetwor
 import { SAFE_PLACES } from '../../data/safePlaces.js'
 import { MOBILITY_CITIES, neighborhoodCenter } from '../../data/seedMobility.js'
 import { can } from '../../domain/account.js'
-import { getCity, getNeighborhood } from '../../domain/places.js'
+import { cityIdOf, getCity, getNeighborhood } from '../../domain/places.js'
 import { alternativeRoutes } from '../../domain/rail.js'
 import { nearestSafePlaces } from '../../domain/safePlaces.js'
 import { getAlert } from '../../services/alertService.js'
@@ -44,7 +44,7 @@ const REFRESH_MS = 15_000
 
 /** Município da conta, se tivermos dados dele; senão, São Paulo. */
 function defaultCityId(account) {
-  const home = account?.neighborhoodId?.split('/')[0]
+  const home = cityIdOf(account?.neighborhoodId)
   return MOBILITY_CITIES.some((c) => c.id === home) ? home : 'sao-paulo'
 }
 

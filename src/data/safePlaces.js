@@ -1,4 +1,4 @@
-import { getNeighborhood } from '../domain/places.js'
+import { cityIdOf, getNeighborhood } from '../domain/places.js'
 import { createRng } from '../domain/random.js'
 import { NEIGHBORHOOD_CENTERS } from './seedMobility.js'
 
@@ -27,7 +27,7 @@ const NORTH_ONLY = new Set(['santos'])
 function placesFor(neighborhoodId, [lat, lng]) {
   const rng = createRng(`safe:${neighborhoodId}`)
   const name = getNeighborhood(neighborhoodId)?.name ?? neighborhoodId
-  const northOnly = NORTH_ONLY.has(neighborhoodId.split('/')[0])
+  const northOnly = NORTH_ONLY.has(cityIdOf(neighborhoodId))
   // Três direções bem separadas (120° entre si), a 450–800 m do centro, para os
   // marcadores não se sobreporem no mapa.
   const start = northOnly ? Math.PI * 0.2 : rng() * Math.PI * 2

@@ -1,4 +1,5 @@
 import { getAuthorLabel } from '../domain/account.js'
+import { cityIdOf } from '../domain/places.js'
 import { reportSchema } from '../domain/postSchemas.js'
 import { responsibleFor } from '../domain/responsibility.js'
 import { getCategory } from '../domain/reportCategories.js'
@@ -85,14 +86,12 @@ export async function listPostsByAuthor(accountId) {
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
 }
 
-/** Aviso do município inteiro (sem bairro) vale para quem acompanha qualquer bairro dele. */
-const cityOf = (neighborhoodId) => neighborhoodId.split('/')[0]
-
 /** Publicações dos bairros pedidos (sem ordenar: a ordem é regra do domínio/tela). */
 export async function listPosts({ neighborhoodIds, accountId = null }) {
   await wait()
   const wanted = new Set(neighborhoodIds)
-  const wantedCities = new Set(neighborhoodIds.map(cityOf))
+  // Aviso do município inteiro (sem bairro) vale para quem acompanha qualquer bairro dele.
+  const wantedCities = new Set(neighborhoodIds.map(cityIdOf))
   const ctx = presentationContext(clock.now())
   return allPosts()
     .filter((p) =>

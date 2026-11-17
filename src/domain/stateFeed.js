@@ -1,3 +1,5 @@
+import { cityIdOf } from './places.js'
+
 /**
  * Regras do feed estadual: alertas, notícias e eventos.
  *
@@ -113,5 +115,5 @@ export function groupByKind(items) {
 
 /** Municípios (ids) que a pessoa acompanha, sem repetição. */
 export function cityIdsOf(followedPlaces) {
-  return [...new Set(followedPlaces.map((f) => f.neighborhoodId.split('/')[0]))]
+  return [...new Set(followedPlaces.map((f) => cityIdOf(f.neighborhoodId)))]
 }

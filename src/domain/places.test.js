@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { CITIES, formatPlace, getCity, getNeighborhood } from './places.js'
+import { CITIES, cityIdOf, formatPlace, getCity, getNeighborhood } from './places.js'
 
 describe('catálogo de lugares', () => {
   it('gera ids estáveis, sem acento, no formato município/bairro', () => {
@@ -22,5 +22,11 @@ describe('catálogo de lugares', () => {
     expect(getNeighborhood('nao/existe')).toBeNull()
     expect(getCity('santos')?.name).toBe('Santos')
     expect(getCity('xx')).toBeNull()
+  })
+
+  it('cityIdOf extrai o município do id do bairro', () => {
+    expect(cityIdOf('sao-paulo/pinheiros')).toBe('sao-paulo')
+    expect(cityIdOf(null)).toBeNull()
+    expect(cityIdOf(undefined)).toBeNull()
   })
 })
