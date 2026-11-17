@@ -1,34 +1,13 @@
 import { useId } from 'react'
-import {
-  HandHeart,
-  Info,
-  Landmark,
-  MapPin,
-  OctagonAlert,
-  TriangleAlert,
-} from 'lucide-react'
+import { Landmark, MapPin } from 'lucide-react'
+import { ALERT_LEVELS } from './alertLevels.js'
 import { Badge } from './Badge.jsx'
 import { Button } from './Button.jsx'
 import { Icon } from './Icon.jsx'
 import { SimulatedBadge } from './SimulatedBadge.jsx'
 import { SourceBadge } from './SourceBadge.jsx'
 import { StatusBadge } from './StatusBadge.jsx'
-
-const LEVELS = {
-  info: { label: 'Informativo', icon: Info, tone: 'info', strip: 'border-l-primary' },
-  attention: {
-    label: 'Atenção',
-    icon: TriangleAlert,
-    tone: 'warn',
-    strip: 'border-l-warn',
-  },
-  urgent: {
-    label: 'Urgente',
-    icon: OctagonAlert,
-    tone: 'danger',
-    strip: 'border-l-danger',
-  },
-}
+import { SupportButton } from './SupportButton.jsx'
 
 /**
  * Cartão de publicação. Os três tipos se distinguem pela FORMA, não só pela cor:
@@ -64,7 +43,7 @@ export function PostCard({
   source = 'moderation',
 }) {
   const titleId = useId()
-  const notice = LEVELS[level]
+  const notice = ALERT_LEVELS[level]
   const Title = detail ? 'h1' : 'h3'
 
   const shell = {
@@ -136,15 +115,12 @@ export function PostCard({
               {ownPost ? (
                 <Badge tone="info">Seu relato · {supports} apoios</Badge>
               ) : (
-                <Button
-                  variant={supported ? 'primary' : 'secondary'}
-                  icon={HandHeart}
-                  aria-pressed={supported}
-                  disabled={supportPending}
+                <SupportButton
+                  supported={supported}
+                  supports={supports}
+                  pending={supportPending}
                   onClick={onToggleSupport}
-                >
-                  {supported ? 'Apoiado' : 'Apoiar'} · {supports}
-                </Button>
+                />
               )}
             </div>
           </div>

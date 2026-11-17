@@ -1,36 +1,11 @@
 import { useId } from 'react'
-import {
-  Bookmark,
-  CalendarDays,
-  Clock,
-  Info,
-  MapPin,
-  Newspaper,
-  OctagonAlert,
-  Ticket,
-  TriangleAlert,
-} from 'lucide-react'
+import { Bookmark, CalendarDays, Clock, MapPin, Newspaper, Ticket } from 'lucide-react'
+import { ALERT_LEVELS } from './alertLevels.js'
 import { Badge } from './Badge.jsx'
 import { Button } from './Button.jsx'
 import { Icon } from './Icon.jsx'
 import { SimulatedBadge } from './SimulatedBadge.jsx'
 import { SourceBadge } from './SourceBadge.jsx'
-
-const LEVELS = {
-  info: { label: 'Informativo', icon: Info, tone: 'info', strip: 'border-l-primary' },
-  attention: {
-    label: 'Atenção',
-    icon: TriangleAlert,
-    tone: 'warn',
-    strip: 'border-l-warn',
-  },
-  urgent: {
-    label: 'Urgente',
-    icon: OctagonAlert,
-    tone: 'danger',
-    strip: 'border-l-danger',
-  },
-}
 
 const TIMING = {
   upcoming: null,
@@ -76,7 +51,7 @@ export function StateCard({
 }) {
   const titleId = useId()
   const Title = detail ? 'h1' : 'h3'
-  const alert = LEVELS[level]
+  const alert = ALERT_LEVELS[level]
   const timingBadge = TIMING[timing]
 
   const shell = {
