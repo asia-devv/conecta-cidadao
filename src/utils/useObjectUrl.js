@@ -10,7 +10,7 @@ export function useObjectUrl(blob) {
   useEffect(() => {
     if (!blob) {
       // Sincroniza com um recurso externo (URL de objeto do navegador): setState no efeito é intencional.
-      // oxlint-disable-next-line react/set-state-in-effect
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setUrl(null)
       return undefined
     }

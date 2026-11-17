@@ -65,7 +65,7 @@ export function StateCard({
   return (
     // O cartão inteiro responde ao toque (atalho para dedo/mouse); quem usa teclado ou
     // leitor de tela usa o botão, que é o controle de verdade.
-    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events
     <article
       aria-labelledby={titleId}
       onClick={
