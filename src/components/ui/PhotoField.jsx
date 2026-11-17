@@ -3,6 +3,7 @@ import { Camera, Trash2 } from 'lucide-react'
 import { compressImage } from '../../utils/image.js'
 import { useObjectUrl } from '../../utils/useObjectUrl.js'
 import { Button } from './Button.jsx'
+import { FieldError } from './FormFields.jsx'
 
 /**
  * Campo de foto. A imagem escolhida é reduzida e regravada como JPEG sem
@@ -84,11 +85,7 @@ export function PhotoField({ value, onChange, label = 'Foto', required, hint, er
           </Button>
         )}
       </div>
-      {message && (
-        <p id={`${id}-error`} role="alert" className="text-sm font-bold text-danger-ink">
-          {message}
-        </p>
-      )}
+      <FieldError id={`${id}-error`} message={message} />
     </div>
   )
 }
