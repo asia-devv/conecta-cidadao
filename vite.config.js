@@ -1,7 +1,16 @@
 import react from '@vitejs/plugin-react'
-import { defineConfig } from 'vite'
+import tailwindcss from '@tailwindcss/vite'
+import { defineConfig } from 'vitest/config'
+import { fiwareProxyPlugin } from './server/fiwareProxy.js'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  // APP_BASE=./ gera um build que funciona em qualquer subcaminho (ex.: página hospedada).
+  base: process.env.APP_BASE ?? '/',
+  plugins: [react(), tailwindcss(), fiwareProxyPlugin()],
+  test: {
+    environment: 'jsdom',
+    setupFiles: ['./src/test/setup.js'],
+    css: false,
+  },
 })

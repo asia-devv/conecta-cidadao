@@ -1,0 +1,276 @@
+{
+  "info": {
+    "name": "Nossa Rua · Sensores de trânsito (FIWARE)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Sensores de velocidade média do app Nossa Rua no FIWARE (Orion + IoT Agent UltraLight/MQTT), no mesmo padrão do projeto Vinheria-Full.\n\nPreencha as variáveis fiware_ip (IPv4 do servidor), sensor_id (ex.: 001), segment_id (via simulada, ex.: sao-paulo-s1), road_name e max_speed.\n\nOrdem sugerida: 1 → 2 → 3 → 4 (ou publique por MQTT) → 5. Os dispositivos de verdade publicam por MQTT em /TEF/traffic{{sensor_id}}/attrs com a mensagem v|<km/h>."
+  },
+  "variable": [
+    {
+      "key": "fiware_ip",
+      "value": "98.91.20.39"
+    },
+    {
+      "key": "sensor_id",
+      "value": "001"
+    },
+    {
+      "key": "segment_id",
+      "value": "sao-paulo-s1"
+    },
+    {
+      "key": "road_name",
+      "value": "Ligação Pinheiros–Centro"
+    },
+    {
+      "key": "max_speed",
+      "value": "50"
+    },
+    {
+      "key": "average_speed",
+      "value": "23.5"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Orion: versão (teste de conexão)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://{{fiware_ip}}:1026/version",
+          "protocol": "http",
+          "host": ["{{fiware_ip}}"],
+          "port": "1026",
+          "path": ["version"]
+        },
+        "description": "Confirma que o Orion Context Broker responde."
+      }
+    },
+    {
+      "name": "2. IoT Agent: cadastrar sensor",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "fiware-service",
+            "value": "smart"
+          },
+          {
+            "key": "fiware-servicepath",
+            "value": "/"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://{{fiware_ip}}:4041/iot/devices",
+          "protocol": "http",
+          "host": ["{{fiware_ip}}"],
+          "port": "4041",
+          "path": ["iot", "devices"]
+        },
+        "description": "Mesmo corpo que o painel /admin/parametros envia. O sensor passa a ouvir /TEF/traffic{{sensor_id}}/attrs.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"devices\": [\n    {\n      \"device_id\": \"traffic{{sensor_id}}\",\n      \"entity_name\": \"urn:ngsi-ld:TrafficSensor:{{sensor_id}}\",\n      \"entity_type\": \"TrafficSensor\",\n      \"protocol\": \"PDI-IoTA-UltraLight\",\n      \"transport\": \"MQTT\",\n      \"attributes\": [\n        {\n          \"object_id\": \"v\",\n          \"name\": \"averageSpeed\",\n          \"type\": \"Float\"\n        },\n        {\n          \"object_id\": \"c\",\n          \"name\": \"vehicleCount\",\n          \"type\": \"Integer\"\n        }\n      ],\n      \"static_attributes\": [\n        {\n          \"name\": \"segmentId\",\n          \"type\": \"Text\",\n          \"value\": \"{{segment_id}}\"\n        },\n        {\n          \"name\": \"roadName\",\n          \"type\": \"Text\",\n          \"value\": \"{{road_name}}\"\n        },\n        {\n          \"name\": \"maxSpeed\",\n          \"type\": \"Integer\",\n          \"value\": {{max_speed}}\n        }\n      ]\n    }\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "3. IoT Agent: listar dispositivos",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "fiware-service",
+            "value": "smart"
+          },
+          {
+            "key": "fiware-servicepath",
+            "value": "/"
+          }
+        ],
+        "url": {
+          "raw": "http://{{fiware_ip}}:4041/iot/devices?limit=200",
+          "protocol": "http",
+          "host": ["{{fiware_ip}}"],
+          "port": "4041",
+          "path": ["iot", "devices"],
+          "query": [
+            {
+              "key": "limit",
+              "value": "200"
+            }
+          ]
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "4. Orion: enviar leitura de teste (sem MQTT)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "fiware-service",
+            "value": "smart"
+          },
+          {
+            "key": "fiware-servicepath",
+            "value": "/"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://{{fiware_ip}}:1026/v2/entities?options=upsert",
+          "protocol": "http",
+          "host": ["{{fiware_ip}}"],
+          "port": "1026",
+          "path": ["v2", "entities"],
+          "query": [
+            {
+              "key": "options",
+              "value": "upsert"
+            }
+          ]
+        },
+        "description": "Atualiza a velocidade média direto no Orion, como o botão 'Enviar ao Orion' do painel. O caminho normal é o dispositivo publicar por MQTT.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"id\": \"urn:ngsi-ld:TrafficSensor:{{sensor_id}}\",\n  \"type\": \"TrafficSensor\",\n  \"averageSpeed\": {\n    \"type\": \"Float\",\n    \"value\": {{average_speed}}\n  },\n  \"TimeInstant\": {\n    \"type\": \"DateTime\",\n    \"value\": \"{{$isoTimestamp}}\"\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "5. Orion: ver a entidade do sensor",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "fiware-service",
+            "value": "smart"
+          },
+          {
+            "key": "fiware-servicepath",
+            "value": "/"
+          }
+        ],
+        "url": {
+          "raw": "http://{{fiware_ip}}:1026/v2/entities/urn:ngsi-ld:TrafficSensor:{{sensor_id}}?options=keyValues",
+          "protocol": "http",
+          "host": ["{{fiware_ip}}"],
+          "port": "1026",
+          "path": ["v2", "entities", "urn:ngsi-ld:TrafficSensor:{{sensor_id}}"],
+          "query": [
+            {
+              "key": "options",
+              "value": "keyValues"
+            }
+          ]
+        },
+        "description": "Mostra a última velocidade média e os atributos fixos (via e velocidade máxima)."
+      }
+    },
+    {
+      "name": "6. Orion: todos os sensores",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "fiware-service",
+            "value": "smart"
+          },
+          {
+            "key": "fiware-servicepath",
+            "value": "/"
+          }
+        ],
+        "url": {
+          "raw": "http://{{fiware_ip}}:1026/v2/entities?type=TrafficSensor&options=keyValues&limit=200",
+          "protocol": "http",
+          "host": ["{{fiware_ip}}"],
+          "port": "1026",
+          "path": ["v2", "entities"],
+          "query": [
+            {
+              "key": "type",
+              "value": "TrafficSensor"
+            },
+            {
+              "key": "options",
+              "value": "keyValues"
+            },
+            {
+              "key": "limit",
+              "value": "200"
+            }
+          ]
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "7. IoT Agent: remover sensor",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "fiware-service",
+            "value": "smart"
+          },
+          {
+            "key": "fiware-servicepath",
+            "value": "/"
+          }
+        ],
+        "url": {
+          "raw": "http://{{fiware_ip}}:4041/iot/devices/traffic{{sensor_id}}",
+          "protocol": "http",
+          "host": ["{{fiware_ip}}"],
+          "port": "4041",
+          "path": ["iot", "devices", "traffic{{sensor_id}}"]
+        },
+        "description": ""
+      }
+    },
+    {
+      "name": "8. Orion: remover a entidade",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "fiware-service",
+            "value": "smart"
+          },
+          {
+            "key": "fiware-servicepath",
+            "value": "/"
+          }
+        ],
+        "url": {
+          "raw": "http://{{fiware_ip}}:1026/v2/entities/urn:ngsi-ld:TrafficSensor:{{sensor_id}}",
+          "protocol": "http",
+          "host": ["{{fiware_ip}}"],
+          "port": "1026",
+          "path": ["v2", "entities", "urn:ngsi-ld:TrafficSensor:{{sensor_id}}"]
+        },
+        "description": ""
+      }
+    }
+  ]
+}
