@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
@@ -7,10 +7,10 @@ import { Logo } from '../../components/layout/Logo.jsx'
 import { Button } from '../../components/ui/Button.jsx'
 import { TextField } from '../../components/ui/FormFields.jsx'
 import { Notice } from '../../components/ui/Notice.jsx'
-import { APP_NAME } from '../../config/appConfig.js'
 import { DEMO_ACCOUNTS, DEMO_ADMIN_PASSWORD } from '../../config/demoAccounts.js'
 import { useSession } from '../../context/SessionContext.jsx'
 import { adminLoginSchema } from '../../domain/accountSchemas.js'
+import { useDocumentTitle } from '../../utils/useDocumentTitle.js'
 
 /** Acesso administrativo, separado do login de moradores (/admin/login). */
 export function AdminLoginPage() {
@@ -28,9 +28,7 @@ export function AdminLoginPage() {
     mode: 'onTouched',
   })
 
-  useEffect(() => {
-    document.title = `Acesso administrativo · ${APP_NAME}`
-  }, [])
+  useDocumentTitle('Acesso administrativo')
 
   async function onSubmit(values) {
     setServerError(null)

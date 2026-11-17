@@ -1,15 +1,15 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Chip } from '../../components/ui/Chip.jsx'
 import { SelectField } from '../../components/ui/FormFields.jsx'
 import { EmptyState, ErrorState, Skeleton } from '../../components/ui/States.jsx'
 import { Button } from '../../components/ui/Button.jsx'
-import { APP_NAME } from '../../config/appConfig.js'
 import { QUEUE_STATES, filterAdminReports } from '../../domain/adminQueue.js'
 import { CITIES } from '../../domain/places.js'
 import { URGENCY_LEVELS } from '../../domain/priority.js'
 import { REPORT_CATEGORIES } from '../../domain/reportCategories.js'
 import { ReportRow } from './ReportRow.jsx'
 import { useAdminReports } from './useAdminReports.js'
+import { useDocumentTitle } from '../../utils/useDocumentTitle.js'
 
 const PAGE_SIZE = 25
 
@@ -24,9 +24,7 @@ export function ReportsQueuePage() {
   })
   const [visible, setVisible] = useState(PAGE_SIZE)
 
-  useEffect(() => {
-    document.title = `Ocorrências · Painel · ${APP_NAME}`
-  }, [])
+  useDocumentTitle('Ocorrências · Painel')
 
   function change(key, value) {
     setFilters((f) => ({ ...f, [key]: value }))

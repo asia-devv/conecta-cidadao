@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { ArrowLeft, CalendarPlus, Map as MapIcon, Share2 } from 'lucide-react'
@@ -17,6 +16,7 @@ import { downloadIcs } from '../../utils/download.js'
 import { shareLink } from '../../utils/share.js'
 import { StateItem } from '../../components/state/StateItem.jsx'
 import { useSaveEvent } from './useSaveEvent.js'
+import { useDocumentTitle } from '../../utils/useDocumentTitle.js'
 
 const SHARE_MESSAGES = {
   copied: 'Link copiado.',
@@ -42,9 +42,7 @@ export function StateDetailPage() {
   })
   const item = query.data
 
-  useEffect(() => {
-    document.title = `${item?.title ?? 'Estado'} · ${APP_NAME}`
-  }, [item?.title])
+  useDocumentTitle(item?.title ?? 'Estado')
 
   async function handleShare() {
     const result = await shareLink({

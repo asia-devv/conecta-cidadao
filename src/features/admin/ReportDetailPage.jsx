@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { PostImage } from '../../components/post/PostImage.jsx'
@@ -8,7 +8,6 @@ import { Notice } from '../../components/ui/Notice.jsx'
 import { StatusBadge } from '../../components/ui/StatusBadge.jsx'
 import { StatusTimeline } from '../../components/ui/StatusTimeline.jsx'
 import { ErrorState, Skeleton } from '../../components/ui/States.jsx'
-import { APP_NAME } from '../../config/appConfig.js'
 import { formatPlace } from '../../domain/places.js'
 import { getCategory } from '../../domain/reportCategories.js'
 import { formatDateTime } from '../../utils/format.js'
@@ -16,6 +15,7 @@ import { PriorityBreakdown } from './PriorityBreakdown.jsx'
 import { StatusUpdateForm } from './StatusUpdateForm.jsx'
 import { UrgencyBadge } from './UrgencyBadge.jsx'
 import { useAdminReport } from './useAdminReports.js'
+import { useDocumentTitle } from '../../utils/useDocumentTitle.js'
 
 /** Uma ocorrência: o relato, a conta da prioridade, o histórico e a atualização de status. */
 export function ReportDetailPage() {
@@ -24,9 +24,7 @@ export function ReportDetailPage() {
   const report = query.data
   const [updatedTo, setUpdatedTo] = useState(null)
 
-  useEffect(() => {
-    document.title = `${report?.title ?? 'Ocorrência'} · Painel · ${APP_NAME}`
-  }, [report?.title])
+  useDocumentTitle(`${report?.title ?? 'Ocorrência'} · Painel`)
 
   return (
     <div className="flex flex-col gap-6">

@@ -1,8 +1,7 @@
-import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
-import { APP_NAME } from '../../config/appConfig.js'
 import { Icon } from '../ui/Icon.jsx'
+import { useDocumentTitle } from '../../utils/useDocumentTitle.js'
 
 /**
  * Esqueleto de uma tela: título (h1), descrição e, se houver, link "Voltar".
@@ -10,9 +9,7 @@ import { Icon } from '../ui/Icon.jsx'
  * navegar entre telas.
  */
 export function Page({ title, description, backTo, backLabel = 'Voltar', children }) {
-  useEffect(() => {
-    document.title = `${title} · ${APP_NAME}`
-  }, [title])
+  useDocumentTitle(title)
 
   return (
     <div className="flex flex-col gap-5 px-4 pt-3 pb-8">

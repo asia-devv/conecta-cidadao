@@ -1,9 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Button } from '../../components/ui/Button.jsx'
 import { TextField } from '../../components/ui/FormFields.jsx'
 import { Notice } from '../../components/ui/Notice.jsx'
-import { APP_NAME } from '../../config/appConfig.js'
 import { useSession } from '../../context/SessionContext.jsx'
 import { DEFAULT_THRESHOLDS, validateThresholds } from '../../domain/traffic.js'
 import {
@@ -12,6 +11,7 @@ import {
 } from '../../services/adminService.js'
 import { getTrafficThresholds } from '../../services/settingsService.js'
 import { IotDevicesSection } from './IotDevicesSection.jsx'
+import { useDocumentTitle } from '../../utils/useDocumentTitle.js'
 
 function ThresholdsForm({ current }) {
   const { account } = useSession()
@@ -127,9 +127,7 @@ function ThresholdsForm({ current }) {
 
 /** Parâmetros ajustáveis do protótipo: hoje, os limites que classificam o trânsito. */
 export function AdminSettingsPage() {
-  useEffect(() => {
-    document.title = `Parâmetros · Painel · ${APP_NAME}`
-  }, [])
+  useDocumentTitle('Parâmetros · Painel')
   const query = useQuery({
     queryKey: ['admin', 'thresholds'],
     queryFn: async () => getTrafficThresholds(),
