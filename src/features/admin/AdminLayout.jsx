@@ -7,6 +7,7 @@ import { RouteFallback } from '../../components/layout/RouteFallback.jsx'
 import { useRouteFocus } from '../../components/layout/useRouteFocus.js'
 import { Button } from '../../components/ui/Button.jsx'
 import { useSession } from '../../context/SessionContext.jsx'
+import { SkipLink } from '../../components/layout/SkipLink.jsx'
 
 const SECTIONS = [
   { to: '/admin', label: 'Visão geral', end: true },
@@ -32,12 +33,7 @@ export function AdminLayout() {
 
   return (
     <div className="min-h-dvh bg-canvas text-ink">
-      <a
-        href="#conteudo"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded-control focus:bg-primary focus:px-4 focus:py-2 focus:font-bold focus:text-on-primary"
-      >
-        Pular para o conteúdo
-      </a>
+      <SkipLink />
       <header className="hairline border-x-0 border-t-0 border-line bg-surface">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3">
           <div className="flex items-center gap-3">

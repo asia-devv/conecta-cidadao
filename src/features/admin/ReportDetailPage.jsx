@@ -1,9 +1,7 @@
 import { useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
+import { useParams } from 'react-router-dom'
 import { PostImage } from '../../components/post/PostImage.jsx'
 import { CategoryIllustration } from '../../components/illustrations/Illustrations.jsx'
-import { Icon } from '../../components/ui/Icon.jsx'
 import { Notice } from '../../components/ui/Notice.jsx'
 import { StatusBadge } from '../../components/ui/StatusBadge.jsx'
 import { StatusTimeline } from '../../components/ui/StatusTimeline.jsx'
@@ -16,6 +14,7 @@ import { StatusUpdateForm } from './StatusUpdateForm.jsx'
 import { UrgencyBadge } from './UrgencyBadge.jsx'
 import { useAdminReport } from './useAdminReports.js'
 import { useDocumentTitle } from '../../utils/useDocumentTitle.js'
+import { BackLink } from '../../components/layout/BackLink.jsx'
 
 /** Uma ocorrência: o relato, a conta da prioridade, o histórico e a atualização de status. */
 export function ReportDetailPage() {
@@ -28,13 +27,7 @@ export function ReportDetailPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <Link
-        to="/admin/ocorrencias"
-        className="inline-flex min-h-(--tap-min) w-fit items-center gap-1.5 rounded-control pr-2 font-bold text-primary"
-      >
-        <Icon icon={ArrowLeft} />
-        Voltar à fila
-      </Link>
+      <BackLink to="/admin/ocorrencias">Voltar à fila</BackLink>
 
       {query.isPending && (
         <div aria-busy="true" className="flex flex-col gap-3">
