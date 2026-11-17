@@ -35,47 +35,36 @@ export function SessionProvider({ children }) {
 
   const setAccount = useCallback((account) => setState({ status: 'ready', account }), [])
 
-  const value = useMemo(
-    () => ({
+  const value = useMemo(() => {
+    /** Chama o serviço e passa a usar a conta que ele devolveu. */
+    const withAccount =
+      (action) =>
+      async (...args) => {
+        const account = await action(...args)
+        setAccount(account)
+        return account
+      }
+    return {
       status: state.status,
       account: state.account,
-      async signUp(input) {
-        const account = await accounts.signUp(input)
-        setAccount(account)
-        return account
-      },
-      async signIn(input) {
-        const account = await accounts.signIn(input)
-        setAccount(account)
-        return account
-      },
-      async signInDemo(kind) {
-        const account = await accounts.signInDemo(kind)
-        setAccount(account)
-        return account
-      },
-      async signInAdmin(input) {
-        const account = await accounts.signInAdmin(input)
-        setAccount(account)
-        return account
-      },
+      signUp: withAccount(accounts.signUp),
+      signIn: withAccount(accounts.signIn),
+      signInDemo: withAccount(accounts.signInDemo),
+      signInAdmin: withAccount(accounts.signInAdmin),
+      updateAccount: withAccount((patch) =>
+        accounts.updateAccount(state.account.id, patch),
+      ),
       async signOut() {
         await accounts.signOut()
         setAccount(null)
-      },
-      async updateAccount(patch) {
-        const account = await accounts.updateAccount(state.account.id, patch)
-        setAccount(account)
-        return account
       },
       async deleteAccount() {
         await accounts.deleteAccount(state.account.id)
         setAccount(null)
       },
       exportAccountData: () => accounts.exportAccountData(state.account.id),
-    }),
-    [state, setAccount],
-  )
+    }
+  }, [state, setAccount])
 
   return <SessionContext value={value}>{children}</SessionContext>
 }
