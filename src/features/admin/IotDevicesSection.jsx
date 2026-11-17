@@ -294,7 +294,7 @@ npm run iot:simular -- --broker <IP> --ids ${example}`}
         <p>
           No Postman, importe{' '}
           <code className="font-mono">
-            docs/postman/nossa-rua-iot.postman_collection.json
+            docs/postman/conecta-cidadao-iot.postman_collection.json
           </code>{' '}
           e preencha a variável <code className="font-mono">fiware_ip</code>.
         </p>
