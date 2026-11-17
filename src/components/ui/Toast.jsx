@@ -9,7 +9,7 @@ const ToastContext = createContext(null)
 const TONES = {
   info: { icon: Info, classes: 'bg-ink text-canvas' },
   success: { icon: CircleCheck, classes: 'bg-ok-ink text-white' },
-  error: { icon: CircleAlert, classes: 'bg-danger-ink text-white' },
+  danger: { icon: CircleAlert, classes: 'bg-danger-ink text-white' },
 }
 
 const DURATION_MS = 6000

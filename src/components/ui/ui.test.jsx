@@ -228,6 +228,23 @@ describe('Toast', () => {
     await user.click(screen.getByRole('button', { name: 'Mostrar' }))
     expect(screen.getByRole('status')).toHaveTextContent('Apoio registrado')
   })
+
+  it('mostra avisos de erro com o tom "danger", o mesmo de Notice e Badge', async () => {
+    const user = userEvent.setup()
+    function Trigger() {
+      const { show } = useToast()
+      return (
+        <button onClick={() => show('Falhou', { tone: 'danger' })}>Mostrar erro</button>
+      )
+    }
+    render(
+      <ToastProvider>
+        <Trigger />
+      </ToastProvider>,
+    )
+    await user.click(screen.getByRole('button', { name: 'Mostrar erro' }))
+    expect(screen.getByRole('status')).toHaveTextContent('Falhou')
+  })
 })
 
 describe('ErrorBoundary', () => {

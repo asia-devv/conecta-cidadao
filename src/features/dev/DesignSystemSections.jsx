@@ -481,7 +481,9 @@ function OverlayDemo() {
       </Button>
       <Button
         variant="secondary"
-        onClick={() => show('Não foi possível enviar. Tente de novo.', { tone: 'error' })}
+        onClick={() =>
+          show('Não foi possível enviar. Tente de novo.', { tone: 'danger' })
+        }
       >
         Mostrar aviso de erro
       </Button>
