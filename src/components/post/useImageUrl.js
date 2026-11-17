@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getImage } from '../../services/imageStore.js'
+import { useObjectUrl } from '../../utils/useObjectUrl.js'
 
 /** Carrega a foto do IndexedDB e a expõe como URL temporária (liberada ao sair da tela). */
 export function useImageUrl(imageId) {
@@ -11,19 +11,7 @@ export function useImageUrl(imageId) {
     staleTime: Infinity,
     retry: false,
   })
-  const [url, setUrl] = useState(null)
-
-  useEffect(() => {
-    if (!query.data) {
-      // Sincroniza com um recurso externo (URL de objeto do navegador): setState no efeito é intencional.
-      // oxlint-disable-next-line react/set-state-in-effect
-      setUrl(null)
-      return undefined
-    }
-    const objectUrl = URL.createObjectURL(query.data)
-    setUrl(objectUrl)
-    return () => URL.revokeObjectURL(objectUrl)
-  }, [query.data])
+  const url = useObjectUrl(query.data)
 
   return {
     url,
