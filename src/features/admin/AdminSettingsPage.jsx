@@ -11,6 +11,7 @@ import {
 } from '../../services/adminService.js'
 import { getTrafficThresholds } from '../../services/settingsService.js'
 import { IotDevicesSection } from './IotDevicesSection.jsx'
+import { useAsyncAction } from '../../utils/useAsyncAction.js'
 import { useDocumentTitle } from '../../utils/useDocumentTitle.js'
 
 function ThresholdsForm({ current }) {
@@ -18,29 +19,22 @@ function ThresholdsForm({ current }) {
   const queryClient = useQueryClient()
   const [freeFrom, setFreeFrom] = useState(String(current.freeFrom))
   const [heavyBelow, setHeavyBelow] = useState(String(current.heavyBelow))
-  const [error, setError] = useState(null)
   const [feedback, setFeedback] = useState(null)
-  const [busy, setBusy] = useState(false)
+  const { busy, error, setError, run } = useAsyncAction()
 
   const numbers = { freeFrom: Number(freeFrom), heavyBelow: Number(heavyBelow) }
   const isDefault =
     current.freeFrom === DEFAULT_THRESHOLDS.freeFrom &&
     current.heavyBelow === DEFAULT_THRESHOLDS.heavyBelow
 
-  async function run(action, message) {
-    setBusy(true)
-    setError(null)
+  async function apply(action, message) {
     setFeedback(null)
-    try {
+    await run(async () => {
       await action()
       setFeedback(message)
       // o mapa de todos os municípios depende destes limites
       await queryClient.invalidateQueries()
-    } catch (e) {
-      setError(e.message)
-    } finally {
-      setBusy(false)
-    }
+    })
   }
 
   function submit(event) {
@@ -51,14 +45,14 @@ function ThresholdsForm({ current }) {
       setError(problem)
       return
     }
-    run(
+    apply(
       () => updateTrafficThresholds({ admin: account, ...numbers }),
       'Limites salvos. O mapa já usa os novos valores.',
     )
   }
 
   async function restore() {
-    await run(() => restoreTrafficThresholds(account), 'Limites padrão restaurados.')
+    await apply(() => restoreTrafficThresholds(account), 'Limites padrão restaurados.')
     setFreeFrom(String(DEFAULT_THRESHOLDS.freeFrom))
     setHeavyBelow(String(DEFAULT_THRESHOLDS.heavyBelow))
   }

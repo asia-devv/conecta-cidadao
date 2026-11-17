@@ -21,6 +21,7 @@ import {
 } from '../../services/fiwareService.js'
 import { getTrafficThresholds } from '../../services/settingsService.js'
 import { formatClock } from '../../utils/format.js'
+import { useAsyncAction } from '../../utils/useAsyncAction.js'
 
 const POLL_MS = 5_000
 
@@ -82,24 +83,18 @@ function ServerForm({ server, onChange }) {
 
 function SensorCard({ sensor, server, onChanged, now }) {
   const [speed, setSpeed] = useState('')
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState(null)
   const [confirming, setConfirming] = useState(false)
+  const task = useAsyncAction()
+  const { busy, error, setError } = task
   const status = sensorStatus(sensor, now, getTrafficThresholds())
   const road = roadOf(sensor.segmentId)
 
-  async function run(action) {
-    setBusy(true)
-    setError(null)
-    try {
+  /** Faz a ação no FIWARE e recarrega a lista de sensores. */
+  const run = (action) =>
+    task.run(async () => {
       await action()
       await onChanged()
-    } catch (e) {
-      setError(e.message)
-    } finally {
-      setBusy(false)
-    }
-  }
+    })
 
   return (
     <li className="hairline flex flex-col gap-2 rounded-card border-line bg-surface p-4">
@@ -222,8 +217,7 @@ function SensorCard({ sensor, server, onChanged, now }) {
 function AddSensorForm({ server, existingIds, onAdded }) {
   const [id, setId] = useState('')
   const [segmentId, setSegmentId] = useState(ROADS[0].segmentId)
-  const [error, setError] = useState(null)
-  const [busy, setBusy] = useState(false)
+  const { busy, error, setError, run } = useAsyncAction()
 
   async function submit(event) {
     event.preventDefault()
@@ -236,17 +230,11 @@ function AddSensorForm({ server, existingIds, onAdded }) {
       setError(`Já existe o sensor ${id}.`)
       return
     }
-    const road = roadOf(segmentId)
-    setBusy(true)
-    try {
-      const result = await provisionTrafficSensor(server, id, road)
+    await run(async () => {
+      const result = await provisionTrafficSensor(server, id, roadOf(segmentId))
       setId('')
       onAdded(`Sensor ${id} cadastrado. Publique em ${result.topic}.`)
-    } catch (e) {
-      setError(e.message)
-    } finally {
-      setBusy(false)
-    }
+    })
   }
 
   return (
