@@ -1,6 +1,6 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useSession } from '../context/SessionContext.jsx'
-import { Skeleton } from '../components/ui/States.jsx'
+import { RouteFallback } from '../components/layout/RouteFallback.jsx'
 
 /**
  * Guardas de rota. Decidem quem pode ver o quê, SOMENTE para organizar a
@@ -10,16 +10,7 @@ import { Skeleton } from '../components/ui/States.jsx'
  * de redirecionar, para não expulsar quem já estava logado ao recarregar a página.
  */
 
-function Loading() {
-  return (
-    <div aria-busy="true" aria-live="polite" className="flex flex-col gap-3 p-4">
-      <span className="sr-only">Carregando…</span>
-      <Skeleton className="h-8 w-2/3" />
-      <Skeleton className="h-24 w-full" />
-      <Skeleton className="h-24 w-full" />
-    </div>
-  )
-}
+const Loading = () => <RouteFallback label="Carregando…" />
 
 /** Área do morador(a). Visitante vai para /entrar; admin vai para /admin. */
 export function RequireResident() {

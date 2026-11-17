@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Chip } from '../../components/ui/Chip.jsx'
 import { SelectField } from '../../components/ui/FormFields.jsx'
-import { EmptyState, ErrorState, Skeleton } from '../../components/ui/States.jsx'
+import { EmptyState, ErrorState, LoadingSkeleton } from '../../components/ui/States.jsx'
 import { Button } from '../../components/ui/Button.jsx'
 import { QUEUE_STATES, filterAdminReports } from '../../domain/adminQueue.js'
 import { CITIES } from '../../domain/places.js'
@@ -95,14 +95,7 @@ export function ReportsQueuePage() {
         </div>
       </div>
 
-      {query.isPending && (
-        <div aria-busy="true" className="flex flex-col gap-3">
-          <span className="sr-only">Carregando a fila…</span>
-          {[0, 1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-28 w-full" />
-          ))}
-        </div>
-      )}
+      {query.isPending && <LoadingSkeleton label="Carregando a fila…" count={4} />}
       {query.isError && (
         <ErrorState
           title="Não foi possível carregar a fila"

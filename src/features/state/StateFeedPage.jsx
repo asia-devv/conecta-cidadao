@@ -5,7 +5,7 @@ import { EmptyIllustration } from '../../components/illustrations/Illustrations.
 import { Page } from '../../components/layout/Page.jsx'
 import { Chip } from '../../components/ui/Chip.jsx'
 import { Notice } from '../../components/ui/Notice.jsx'
-import { EmptyState, ErrorState, Skeleton } from '../../components/ui/States.jsx'
+import { EmptyState, ErrorState, LoadingSkeleton } from '../../components/ui/States.jsx'
 import { useClock } from '../../context/ClockContext.jsx'
 import { useSession } from '../../context/SessionContext.jsx'
 import {
@@ -20,17 +20,6 @@ import { listStateItems } from '../../services/stateService.js'
 import { isStateTabItem } from '../../domain/cityFeed.js'
 import { StateItem } from '../../components/state/StateItem.jsx'
 import { useSaveEvent } from './useSaveEvent.js'
-
-function FeedSkeleton() {
-  return (
-    <div aria-busy="true" className="flex flex-col gap-4">
-      <span className="sr-only">Carregando o feed do estado…</span>
-      {[0, 1, 2].map((i) => (
-        <Skeleton key={i} className="h-44 w-full" />
-      ))}
-    </div>
-  )
-}
 
 const EMPTY_TEXT = {
   all: 'Não há alertas, notícias nem eventos ativos para esta região agora.',
@@ -119,7 +108,13 @@ export function StateFeedPage() {
         ))}
       </div>
 
-      {query.isPending && <FeedSkeleton />}
+      {query.isPending && (
+        <LoadingSkeleton
+          label="Carregando o feed do estado…"
+          itemClassName="h-44 w-full"
+          className="flex flex-col gap-4"
+        />
+      )}
       {query.isError && (
         <ErrorState
           title="Não foi possível carregar o feed"

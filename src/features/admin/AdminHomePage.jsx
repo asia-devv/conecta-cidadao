@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ErrorState, Skeleton } from '../../components/ui/States.jsx'
+import { ErrorState, LoadingSkeleton } from '../../components/ui/States.jsx'
 import { summarizeQueue } from '../../domain/priority.js'
 import { formatDuration } from '../../domain/relativeTime.js'
 import { ReportRow } from './ReportRow.jsx'
@@ -47,12 +47,7 @@ export function AdminHomePage() {
       </div>
 
       {!summary ? (
-        <div aria-busy="true" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <span className="sr-only">Carregando…</span>
-          {[0, 1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-28 w-full" />
-          ))}
-        </div>
+        <LoadingSkeleton count={4} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" />
       ) : (
         <dl
           aria-label="Resumo da fila"

@@ -5,7 +5,7 @@ import { Page } from '../../components/layout/Page.jsx'
 import { Chip } from '../../components/ui/Chip.jsx'
 import { Notice } from '../../components/ui/Notice.jsx'
 import { SimulatedBadge } from '../../components/ui/SimulatedBadge.jsx'
-import { ErrorState, Skeleton } from '../../components/ui/States.jsx'
+import { ErrorState, LoadingSkeleton, Skeleton } from '../../components/ui/States.jsx'
 import { useToast } from '../../components/ui/Toast.jsx'
 import { useClock } from '../../context/ClockContext.jsx'
 import { useSession } from '../../context/SessionContext.jsx'
@@ -263,14 +263,7 @@ export function MapPage() {
         ))}
       </div>
 
-      {query.isPending && (
-        <div aria-busy="true" className="flex flex-col gap-3">
-          <span className="sr-only">Carregando o mapa…</span>
-          {[0, 1, 2].map((i) => (
-            <Skeleton key={i} className="h-28 w-full" />
-          ))}
-        </div>
-      )}
+      {query.isPending && <LoadingSkeleton label="Carregando o mapa…" />}
       {query.isError && !snapshot && (
         <ErrorState
           title="Não foi possível carregar a mobilidade"

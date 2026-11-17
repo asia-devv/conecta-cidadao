@@ -32,12 +32,32 @@ export function ErrorState({ title = 'Algo deu errado', message, onRetry }) {
   )
 }
 
-/** Bloco de carregamento. Quem usa marca o container com aria-busy="true". */
+/** Bloco de carregamento. Quem usa marca o container com aria-busy="true" (ou usa LoadingSkeleton). */
 export function Skeleton({ className = '' }) {
   return (
     <div
       aria-hidden="true"
       className={`rounded-control bg-line motion-safe:animate-[pulse-soft_1.4s_ease-in-out_infinite] ${className}`}
     />
+  )
+}
+
+/**
+ * Lista de blocos iguais enquanto os dados chegam, com o texto para leitores de tela.
+ * `className` define o arranjo (coluna, grade); `itemClassName`, o tamanho de cada bloco.
+ */
+export function LoadingSkeleton({
+  label = 'Carregando…',
+  count = 3,
+  itemClassName = 'h-28 w-full',
+  className = 'flex flex-col gap-3',
+}) {
+  return (
+    <div aria-busy="true" className={className}>
+      <span className="sr-only">{label}</span>
+      {Array.from({ length: count }, (_, i) => (
+        <Skeleton key={i} className={itemClassName} />
+      ))}
+    </div>
   )
 }

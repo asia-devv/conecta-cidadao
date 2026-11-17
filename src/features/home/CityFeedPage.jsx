@@ -8,7 +8,7 @@ import { StateItem } from '../../components/state/StateItem.jsx'
 import { Chip } from '../../components/ui/Chip.jsx'
 import { SelectField } from '../../components/ui/FormFields.jsx'
 import { Notice } from '../../components/ui/Notice.jsx'
-import { EmptyState, ErrorState, Skeleton } from '../../components/ui/States.jsx'
+import { EmptyState, ErrorState, LoadingSkeleton } from '../../components/ui/States.jsx'
 import { useClock } from '../../context/ClockContext.jsx'
 import { useSession } from '../../context/SessionContext.jsx'
 import { buildCityFeed, mapLinkFor, noticeToAlert } from '../../domain/cityFeed.js'
@@ -16,17 +16,6 @@ import { CITIES, cityIdOf, getCity } from '../../domain/places.js'
 import { cityIdsOf } from '../../domain/stateFeed.js'
 import { listPosts } from '../../services/postService.js'
 import { listStateItems } from '../../services/stateService.js'
-
-function FeedSkeleton() {
-  return (
-    <div aria-busy="true" className="flex flex-col gap-4">
-      <span className="sr-only">Carregando alertas e notícias…</span>
-      {[0, 1, 2].map((i) => (
-        <Skeleton key={i} className="h-44 w-full" />
-      ))}
-    </div>
-  )
-}
 
 /**
  * Busca o seed (alertas e notícias) e os avisos: dos bairros acompanhados, para
@@ -123,7 +112,13 @@ export function CityFeedPage() {
         />
       )}
 
-      {cityIds.length > 0 && query.isPending && <FeedSkeleton />}
+      {cityIds.length > 0 && query.isPending && (
+        <LoadingSkeleton
+          label="Carregando alertas e notícias…"
+          itemClassName="h-44 w-full"
+          className="flex flex-col gap-4"
+        />
+      )}
       {query.isError && (
         <ErrorState
           title="Não foi possível carregar"
