@@ -62,7 +62,6 @@ export function PostCard({
   // aviso
   level = 'info',
   source = 'moderation',
-  // comercial
 }) {
   const titleId = useId()
   const notice = LEVELS[level]

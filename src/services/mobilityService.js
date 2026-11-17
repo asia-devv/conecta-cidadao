@@ -57,11 +57,6 @@ async function iotReadings(now, thresholds) {
   return result
 }
 
-export async function listMobilityCities() {
-  await wait()
-  return MOBILITY_CITIES.map(({ id, name }) => ({ id, name }))
-}
-
 /**
  * Situação de um município agora.
  * @param {string} cityId

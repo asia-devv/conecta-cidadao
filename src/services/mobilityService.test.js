@@ -1,16 +1,9 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { goToLocalHour } from '../test/clockHelpers.js'
 import { clock } from './clock.js'
-import { getMobilitySnapshot, listMobilityCities } from './mobilityService.js'
+import { getMobilitySnapshot } from './mobilityService.js'
 
 beforeEach(() => clock.reset())
-
-describe('listMobilityCities', () => {
-  it('lista os municípios com dados', async () => {
-    const cities = await listMobilityCities()
-    expect(cities.map((c) => c.id)).toEqual(['sao-paulo', 'campinas', 'santos'])
-  })
-})
 
 describe('getMobilitySnapshot', () => {
   it('falha com not_found para município sem dados', async () => {

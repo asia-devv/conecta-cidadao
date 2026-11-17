@@ -20,7 +20,7 @@ import { formatPlace } from '../../domain/places.js'
 
 /**
  * Bairros acompanhados, cada um com um rótulo (Casa, Trabalho, Faculdade, Outro).
- * Na Etapa 3 o feed da comunidade usará esta lista.
+ * Definem os alertas e as notícias do Início e onde a pessoa pode relatar.
  */
 export function FollowedPlacesPage() {
   const { account, updateAccount } = useSession()

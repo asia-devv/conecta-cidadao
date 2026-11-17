@@ -25,8 +25,6 @@ export function can(account, action) {
   return Boolean(account && PERMISSIONS[action]?.includes(account.type))
 }
 
-export const isResident = (account) => account?.type === 'resident'
-
 export const AUTHOR_DISPLAY = {
   neighborhood: {
     label: 'Só o bairro',

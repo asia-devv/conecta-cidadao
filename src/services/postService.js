@@ -18,8 +18,8 @@ import { storage, writeOrThrow } from './storage.js'
 /**
  * Publicações (relatos e avisos) e apoios.
  *
- * Por enquanto todas vêm do seed. As telas só conhecem as funções exportadas;
- * a Etapa 3B acrescenta as publicações criadas pela pessoa no mesmo lugar.
+ * Junta o conteúdo do seed (fixo, no código) com o que as pessoas publicam neste
+ * aparelho. As telas só conhecem as funções exportadas.
  */
 
 const SUPPORTS_KEY = 'supports' // { [postId]: [accountId, ...] }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { can, getAuthorLabel, getInitials, isResident } from './account.js'
+import { can, getAuthorLabel, getInitials } from './account.js'
 import { loginSchema, profileSchema, signupSchema } from './accountSchemas.js'
 
 const resident = {
@@ -21,13 +21,6 @@ describe('permissões por tipo de conta', () => {
   it('sem conta ou com ação desconhecida, nega', () => {
     expect(can(null, 'report')).toBe(false)
     expect(can(resident, 'inventada')).toBe(false)
-  })
-
-  it('isResident: só a conta de morador(a); tipos antigos não valem mais', () => {
-    expect(isResident({ type: 'resident' })).toBe(true)
-    expect(isResident({ type: 'cnpj' })).toBe(false)
-    expect(isResident({ type: 'admin' })).toBe(false)
-    expect(isResident(null)).toBe(false)
   })
 })
 

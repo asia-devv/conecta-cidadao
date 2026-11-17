@@ -23,8 +23,8 @@ export function MyPostsPage() {
 
   return (
     <Page
-      title={'Meus relatos'}
-      description={'Relatos que você publicou. Abra um para ver o histórico completo.'}
+      title="Meus relatos"
+      description="Relatos que você publicou. Abra um para ver o histórico completo."
       backTo="/perfil"
       backLabel="Voltar ao perfil"
     >
@@ -45,22 +45,20 @@ export function MyPostsPage() {
       {query.isSuccess && query.data.length === 0 && (
         <EmptyState
           illustration={<EmptyIllustration />}
-          title={'Você ainda não publicou relatos'}
-          description={
-            'Quando você relatar um problema do seu bairro, vai acompanhar o andamento por aqui.'
-          }
+          title="Você ainda não publicou relatos"
+          description="Quando você relatar um problema do seu bairro, vai acompanhar o andamento por aqui."
           action={
             <Link
-              to={'/relatar'}
+              to="/relatar"
               className="inline-flex min-h-(--tap-min) items-center font-bold text-primary underline"
             >
-              {'Relatar um problema'}
+              Relatar um problema
             </Link>
           }
         />
       )}
       {query.isSuccess && query.data.length > 0 && (
-        <ul aria-label={'Seus relatos'} className="flex flex-col gap-4">
+        <ul aria-label="Seus relatos" className="flex flex-col gap-4">
           {query.data.map((post) => (
             <li key={post.id}>
               <PostListItem
