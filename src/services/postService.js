@@ -10,7 +10,7 @@ import { createId } from '../utils/id.js'
 import { clock } from './clock.js'
 import { deleteImages, saveImage } from './imageStore.js'
 import { wait } from './latency.js'
-import { seedEpoch } from './seedEpoch.js'
+import { cachedBySeedEpoch } from './seedEpoch.js'
 import { ServiceError } from './ServiceError.js'
 import { storage } from './storage.js'
 
@@ -25,12 +25,7 @@ const SUPPORTS_KEY = 'supports' // { [postId]: [accountId, ...] }
 const POSTS_KEY = 'posts' // publicações criadas pelas pessoas (as do seed ficam no código)
 const ADMIN_EVENTS_KEY = 'admin-events' // { [postId]: [ação da administração, ...] }
 
-let seedCache = { epoch: null, posts: [] }
-function seedPosts() {
-  const epoch = seedEpoch()
-  if (seedCache.epoch !== epoch) seedCache = { epoch, posts: generateSeedPosts(epoch) }
-  return seedCache.posts
-}
+const seedPosts = cachedBySeedEpoch(generateSeedPosts)
 
 const readSupports = () => storage.read(SUPPORTS_KEY, {})
 const readUserPosts = () => storage.read(POSTS_KEY, [])

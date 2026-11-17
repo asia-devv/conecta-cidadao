@@ -1,7 +1,7 @@
 import { generateSeedState } from '../data/seedState.js'
 import { wait } from './latency.js'
 import { clock } from './clock.js'
-import { seedEpoch } from './seedEpoch.js'
+import { cachedBySeedEpoch } from './seedEpoch.js'
 import { ServiceError } from './ServiceError.js'
 import { storage } from './storage.js'
 
@@ -12,12 +12,7 @@ import { storage } from './storage.js'
 
 const SAVED_KEY = 'saved-events' // { [accountId]: [eventId, ...] }
 
-let seedCache = { epoch: null, items: [] }
-function seedItems() {
-  const epoch = seedEpoch()
-  if (seedCache.epoch !== epoch) seedCache = { epoch, items: generateSeedState(epoch) }
-  return seedCache.items
-}
+const seedItems = cachedBySeedEpoch(generateSeedState)
 
 const readSaved = () => storage.read(SAVED_KEY, {})
 

@@ -14,3 +14,16 @@ export function seedEpoch() {
   storage.write(EPOCH_KEY, now)
   return now
 }
+
+/**
+ * Conteúdo do seed gerado a partir da época e guardado em memória. Só é gerado de
+ * novo se a época mudar (ex.: os dados do app foram apagados).
+ */
+export function cachedBySeedEpoch(generate) {
+  let cache = { epoch: null, value: null }
+  return () => {
+    const epoch = seedEpoch()
+    if (cache.epoch !== epoch) cache = { epoch, value: generate(epoch) }
+    return cache.value
+  }
+}
