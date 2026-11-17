@@ -1,7 +1,14 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import '@fontsource/atkinson-hyperlegible/400.css'
+import '@fontsource/atkinson-hyperlegible/700.css'
+import '@fontsource-variable/sora'
+import '@fontsource-variable/bricolage-grotesque'
 import './index.css'
-import App from './App.jsx'
+import { App } from './app/App.jsx'
+import { storage } from './services/storage.js'
+
+storage.removeLegacy()
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

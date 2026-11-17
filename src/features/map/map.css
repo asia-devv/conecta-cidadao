@@ -1,0 +1,105 @@
+/* Cores do mapa: usam os tokens do app, que mudam com o modo de cor. */
+.nr-line-free {
+  stroke: var(--ok);
+}
+.nr-line-moderate {
+  stroke: var(--warn);
+}
+.nr-line-heavy {
+  stroke: var(--danger);
+}
+.nr-line-unknown {
+  stroke: var(--ink-muted);
+}
+.nr-halo {
+  stroke: var(--ink);
+  stroke-opacity: 0.35;
+}
+.nr-route {
+  stroke: var(--ink-muted);
+  stroke-opacity: 0.7;
+}
+.nr-route-selected {
+  stroke: var(--primary);
+}
+.nr-stop {
+  stroke: var(--primary);
+  fill: var(--surface);
+  fill-opacity: 1;
+}
+
+.nr-map {
+  background: var(--surface-warm);
+  isolation: isolate; /* mantém os z-index internos do Leaflet dentro do mapa */
+}
+
+.nr-bus {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  height: 24px;
+  padding: 0 6px;
+  border: 2px solid var(--surface);
+  border-radius: 8px;
+  background: var(--primary);
+  color: var(--primary-ink);
+  font: 700 12px/1 var(--font-body, system-ui);
+  white-space: nowrap;
+}
+
+/* Botões de zoom do Leaflet no tamanho de toque do app. */
+.nr-map .leaflet-control-zoom a {
+  width: var(--tap-min);
+  height: var(--tap-min);
+  line-height: var(--tap-min);
+  font-size: 22px;
+}
+
+/* Metrô e trem: contorno claro sob a cor oficial da linha. */
+.nr-rail-casing {
+  stroke: var(--surface);
+  stroke-opacity: 0.95;
+}
+.nr-station {
+  stroke: var(--ink);
+  fill: var(--surface);
+  fill-opacity: 1;
+}
+.nr-star {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: 2px solid var(--ink);
+  border-radius: 9999px;
+  background: var(--warn-soft, #fff4d6);
+  color: var(--ink);
+  font: 700 15px/1 system-ui;
+}
+
+/* Alertas: área (tracejada), trecho parado (pontilhado grosso) e pontos de apoio. */
+.nr-alert-area {
+  stroke: var(--danger);
+  fill: var(--danger);
+  fill-opacity: 0.08;
+}
+.nr-blocked {
+  stroke: var(--danger);
+}
+.nr-safe {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 3px solid var(--surface);
+  border-radius: 8px;
+  background: var(--ok);
+  color: var(--surface);
+  font: 700 14px/1 var(--font-body, system-ui);
+}
+.nr-safe-selected {
+  outline: 4px solid var(--ink);
+}
