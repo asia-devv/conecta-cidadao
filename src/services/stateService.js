@@ -3,7 +3,7 @@ import { wait } from './latency.js'
 import { clock } from './clock.js'
 import { cachedBySeedEpoch } from './seedEpoch.js'
 import { ServiceError } from './ServiceError.js'
-import { storage } from './storage.js'
+import { storage, writeOrThrow } from './storage.js'
 import { toggleItem } from '../utils/list.js'
 
 /**
@@ -55,12 +55,7 @@ export async function toggleSavedEvent({ eventId, accountId }) {
   const current = map[accountId] ?? []
   const next = toggleItem(current, eventId)
   const updated = { ...map, [accountId]: next }
-  if (!storage.write(SAVED_KEY, updated)) {
-    throw new ServiceError(
-      'storage_unavailable',
-      'Não foi possível salvar o evento neste aparelho.',
-    )
-  }
+  writeOrThrow(SAVED_KEY, updated, 'Não foi possível salvar o evento neste aparelho.')
   return present(item, accountId, updated)
 }
 

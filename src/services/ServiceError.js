@@ -9,3 +9,13 @@ export class ServiceError extends Error {
     this.code = code
   }
 }
+
+/**
+ * Valida `values` com um schema Zod. Se não passar, lança ServiceError('invalid')
+ * com a primeira mensagem do schema, já pronta para a tela mostrar.
+ */
+export function parseOrThrow(schema, values) {
+  const parsed = schema.safeParse(values)
+  if (!parsed.success) throw new ServiceError('invalid', parsed.error.issues[0].message)
+  return parsed.data
+}

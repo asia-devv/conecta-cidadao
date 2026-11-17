@@ -7,6 +7,8 @@
  *   conter lixo. Por isso toda leitura e escrita é protegida: nesses casos o app
  *   continua funcionando, apenas sem lembrar do que foi gravado.
  */
+import { ServiceError } from './ServiceError.js'
+
 const PREFIX = 'nossa-rua:v2:'
 // Formato anterior (com contas de comércio e anúncios): é apagado ao abrir o app.
 const LEGACY_PREFIXES = ['nossa-rua:v1:']
@@ -71,4 +73,13 @@ export const storage = {
       // idem
     }
   },
+}
+
+/** Grava e, se o navegador não deixar, lança ServiceError('storage_unavailable'). */
+export function writeOrThrow(
+  key,
+  value,
+  message = 'Não foi possível salvar neste aparelho. Verifique se o navegador permite armazenamento.',
+) {
+  if (!storage.write(key, value)) throw new ServiceError('storage_unavailable', message)
 }

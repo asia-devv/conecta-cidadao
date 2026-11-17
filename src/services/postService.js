@@ -12,8 +12,8 @@ import { clock } from './clock.js'
 import { deleteImages, saveImage } from './imageStore.js'
 import { wait } from './latency.js'
 import { cachedBySeedEpoch } from './seedEpoch.js'
-import { ServiceError } from './ServiceError.js'
-import { storage } from './storage.js'
+import { ServiceError, parseOrThrow } from './ServiceError.js'
+import { storage, writeOrThrow } from './storage.js'
 
 /**
  * Publicações (relatos e avisos) e apoios.
@@ -33,14 +33,7 @@ const readUserPosts = () => storage.read(POSTS_KEY, [])
 const readAdminEvents = () => storage.read(ADMIN_EVENTS_KEY, {})
 const allPosts = () => [...seedPosts(), ...readUserPosts()]
 
-function saveUserPosts(posts) {
-  if (!storage.write(POSTS_KEY, posts)) {
-    throw new ServiceError(
-      'storage_unavailable',
-      'Não foi possível salvar neste aparelho. Verifique se o navegador permite armazenamento.',
-    )
-  }
-}
+const saveUserPosts = (posts) => writeOrThrow(POSTS_KEY, posts)
 
 /** Lê de uma vez o que `present` precisa de todos os relatos (apoios e ações da administração). */
 function presentationContext(now) {
@@ -117,13 +110,11 @@ export async function toggleSupport({ postId, accountId }) {
   const map = readSupports()
   const current = map[postId] ?? []
   const next = toggleItem(current, accountId)
-  const saved = storage.write(SUPPORTS_KEY, { ...map, [postId]: next })
-  if (!saved) {
-    throw new ServiceError(
-      'storage_unavailable',
-      'Não foi possível salvar o apoio neste aparelho.',
-    )
-  }
+  writeOrThrow(
+    SUPPORTS_KEY,
+    { ...map, [postId]: next },
+    'Não foi possível salvar o apoio neste aparelho.',
+  )
   return present(post, accountId, {
     ...presentationContext(clock.now()),
     supports: { ...map, [postId]: next },
@@ -143,16 +134,7 @@ export async function createReport({
   photo,
 }) {
   await wait()
-  const parsed = reportSchema.safeParse({
-    category,
-    neighborhoodId,
-    title,
-    description,
-    photo,
-  })
-  if (!parsed.success) {
-    throw new ServiceError('invalid', parsed.error.issues[0].message)
-  }
+  parseOrThrow(reportSchema, { category, neighborhoodId, title, description, photo })
   const imageId = photo ? await saveImage(photo) : null
   const post = {
     id: createId('post'),
@@ -244,16 +226,11 @@ export function listAllReports() {
 /** Grava uma ação da administração no histórico do relato. */
 export function recordAdminStatus(postId, event) {
   const map = readAdminEvents()
-  const saved = storage.write(ADMIN_EVENTS_KEY, {
-    ...map,
-    [postId]: [...(map[postId] ?? []), event],
-  })
-  if (!saved) {
-    throw new ServiceError(
-      'storage_unavailable',
-      'Não foi possível salvar a atualização neste aparelho.',
-    )
-  }
+  writeOrThrow(
+    ADMIN_EVENTS_KEY,
+    { ...map, [postId]: [...(map[postId] ?? []), event] },
+    'Não foi possível salvar a atualização neste aparelho.',
+  )
 }
 
 /** Avisos criados pela administração (os do seed não entram: são conteúdo fixo). */

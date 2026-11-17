@@ -6,7 +6,7 @@ import { wait } from './latency.js'
 import { deleteAccountContent, exportAccountContent } from './postService.js'
 import { deleteAccountSavedEvents, listSavedEventIds } from './stateService.js'
 import { ServiceError } from './ServiceError.js'
-import { storage } from './storage.js'
+import { storage, writeOrThrow } from './storage.js'
 
 /**
  * Contas e sessão (simuladas, no localStorage deste aparelho).
@@ -32,14 +32,7 @@ const normalizeEmail = (email) =>
 
 const readAccounts = () => storage.read(ACCOUNTS_KEY, [])
 
-function saveAccounts(accounts) {
-  if (!storage.write(ACCOUNTS_KEY, accounts)) {
-    throw new ServiceError(
-      'storage_unavailable',
-      'Não foi possível salvar neste aparelho. Verifique se o navegador permite armazenamento.',
-    )
-  }
-}
+const saveAccounts = (accounts) => writeOrThrow(ACCOUNTS_KEY, accounts)
 
 function startSession(accountId) {
   storage.write(SESSION_KEY, { accountId })

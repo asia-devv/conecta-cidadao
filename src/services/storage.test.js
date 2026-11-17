@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest'
-import { storage } from './storage.js'
+import { describe, expect, it, vi } from 'vitest'
+import { storage, writeOrThrow } from './storage.js'
 
 describe('storage', () => {
   it('grava e lê valores JSON com o prefixo do app', () => {
@@ -20,5 +20,17 @@ describe('storage', () => {
     storage.clearAll()
     expect(storage.read('a')).toBeNull()
     expect(window.localStorage.getItem('de-outro-app')).toBe('x')
+  })
+
+  it('writeOrThrow lança ServiceError quando o navegador bloqueia a gravação', () => {
+    const spy = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('bloqueado')
+    })
+    expect(() => writeOrThrow('k', 1, 'Sem espaço.')).toThrow(
+      expect.objectContaining({ code: 'storage_unavailable', message: 'Sem espaço.' }),
+    )
+    spy.mockRestore()
+    expect(() => writeOrThrow('k', 1)).not.toThrow()
+    expect(storage.read('k')).toBe(1)
   })
 })

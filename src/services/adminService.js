@@ -11,7 +11,7 @@ import {
   recordAdminStatus,
   removeNotice,
 } from './postService.js'
-import { ServiceError } from './ServiceError.js'
+import { ServiceError, parseOrThrow } from './ServiceError.js'
 import { resetTrafficThresholds, saveTrafficThresholds } from './settingsService.js'
 
 /**
@@ -56,15 +56,14 @@ export async function updateReportStatus({ admin, postId, status, note = '' }) {
   const report = listAllReports().find((r) => r.id === postId)
   if (!report) throw new ServiceError('not_found', 'Não encontramos esse relato.')
 
-  const parsed = makeStatusUpdateSchema(report.status).safeParse({ status, note })
-  if (!parsed.success) throw new ServiceError('invalid', parsed.error.issues[0].message)
+  const data = parseOrThrow(makeStatusUpdateSchema(report.status), { status, note })
 
   const now = clock.now()
   recordAdminStatus(postId, {
-    status: parsed.data.status,
+    status: data.status,
     at: now.toISOString(),
     by: 'admin',
-    ...(parsed.data.note ? { note: parsed.data.note } : {}),
+    ...(data.note ? { note: data.note } : {}),
     simulated: false,
   })
   const updated = listAllReports().find((r) => r.id === postId)
@@ -84,9 +83,10 @@ export async function listAdminNotices(admin) {
 export async function publishNotice({ admin, ...values }) {
   await wait()
   requireAdmin(admin)
-  const parsed = noticeSchema.safeParse(values)
-  if (!parsed.success) throw new ServiceError('invalid', parsed.error.issues[0].message)
-  const { level, title, description, scope, cityId, neighborhoodId } = parsed.data
+  const { level, title, description, scope, cityId, neighborhoodId } = parseOrThrow(
+    noticeSchema,
+    values,
+  )
   return addNotice({
     id: createId('notice'),
     type: 'notice',
