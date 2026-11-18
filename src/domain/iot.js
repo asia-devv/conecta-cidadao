@@ -10,11 +10,20 @@ import { classifyTraffic, DEFAULT_THRESHOLDS } from './traffic.js'
  *  - atributos fixos (static_attributes): a via simulada que o sensor monitora
  *    (`segmentId`, `roadName`) e a velocidade máxima dela (`maxSpeed`).
  *
+ * Também lê o formato do projeto de referência smart-traffic: entidade do tipo
+ * `Traffic` (ex.: urn:ngsi-ld:Traffic:003) com `speed_kmh`, `vehicle_count` e
+ * `s`. Sem `segmentId`, ela vale para o trecho da Marginal Tietê do mesmo projeto.
+ *
  * Há congestionamento quando a média fica muito abaixo da máxima da via:
  * percentual = média ÷ máxima, classificado pelos mesmos limites do mapa.
  */
 
 export const ENTITY_TYPE = 'TrafficSensor'
+/** Tipo usado pelo projeto smart-traffic (sensor da Marginal Tietê). */
+export const REFERENCE_ENTITY_TYPE = 'Traffic'
+export const REFERENCE_DEFAULT_ROAD = 'sp-marginal-tiete'
+/** Janela da média, como no smart-traffic: leituras dos últimos 30 segundos. */
+export const AVERAGE_WINDOW_MS = 30_000
 export const ENTITY_PREFIX = `urn:ngsi-ld:${ENTITY_TYPE}:`
 export const DEVICE_PREFIX = 'traffic'
 export const API_KEY = 'TEF'
@@ -78,9 +87,7 @@ export function mergeSensors(devices, entities) {
   const ensure = (entityName) => {
     if (!sensors.has(entityName)) {
       sensors.set(entityName, {
-        id: entityName.startsWith(ENTITY_PREFIX)
-          ? entityName.slice(ENTITY_PREFIX.length)
-          : entityName,
+        id: entityName.split(':').at(-1),
         entityName,
         deviceId: null,
         provisioned: false,
@@ -106,13 +113,16 @@ export function mergeSensors(devices, entities) {
     }
   }
   for (const entity of entities) {
-    if (entity.type !== ENTITY_TYPE) continue
+    const reference = entity.type === REFERENCE_ENTITY_TYPE
+    if (entity.type !== ENTITY_TYPE && !reference) continue
     const sensor = ensure(entity.id)
-    sensor.segmentId = entity.segmentId ?? sensor.segmentId
+    sensor.format = reference ? 'smart-traffic' : 'nossa'
+    sensor.segmentId =
+      entity.segmentId ?? sensor.segmentId ?? (reference ? REFERENCE_DEFAULT_ROAD : null)
     sensor.roadName = entity.roadName ?? sensor.roadName
     sensor.maxSpeed = toNumber(entity.maxSpeed) ?? sensor.maxSpeed
-    sensor.averageSpeed = toNumber(entity.averageSpeed)
-    sensor.vehicleCount = toNumber(entity.vehicleCount)
+    sensor.averageSpeed = toNumber(reference ? entity.speed_kmh : entity.averageSpeed)
+    sensor.vehicleCount = toNumber(reference ? entity.vehicle_count : entity.vehicleCount)
     sensor.updatedAt = typeof entity.TimeInstant === 'string' ? entity.TimeInstant : null
   }
   return [...sensors.values()].sort((a, b) =>
@@ -138,5 +148,55 @@ export function sensorStatus(sensor, now, thresholds = DEFAULT_THRESHOLDS) {
     level: classifyTraffic(Math.min(percent, 100), thresholds),
     percent,
     differenceKmh: Math.round(sensor.maxSpeed - sensor.averageSpeed),
+  }
+}
+
+/**
+ * Média móvel de 30 s, do jeito do smart-traffic: consulta-se o Orion o tempo
+ * todo, mas só conta como medição NOVA quando o `TimeInstant` muda.
+ *
+ * `history`: Map sensorId → [{ at, speed }] (é atualizado e devolvido).
+ */
+export function recordSamples(history, sensors, nowMs, windowMs = AVERAGE_WINDOW_MS) {
+  for (const sensor of sensors) {
+    if (sensor.averageSpeed === null || !sensor.updatedAt) continue
+    const at = new Date(sensor.updatedAt).getTime()
+    const samples = history.get(sensor.id) ?? []
+    if (!samples.some((s) => s.at === at))
+      samples.push({ at, speed: sensor.averageSpeed })
+    history.set(
+      sensor.id,
+      samples.filter((s) => nowMs - s.at <= windowMs),
+    )
+  }
+  return history
+}
+
+/** Média das medições na janela; `null` se não houve nenhuma. */
+export function windowAverage(samples = []) {
+  if (samples.length === 0) return null
+  return samples.reduce((sum, s) => sum + s.speed, 0) / samples.length
+}
+
+/**
+ * Leitura de uma via a partir do sensor e das medições da janela de 30 s:
+ * a média decide a cor; a última medição aparece como "agora".
+ */
+export function liveReading(sensor, samples, now, thresholds = DEFAULT_THRESHOLDS) {
+  const average = windowAverage(samples)
+  const speed = average ?? sensor.averageSpeed
+  const status = sensorStatus({ ...sensor, averageSpeed: speed }, now, thresholds)
+  return {
+    status:
+      status.status === 'ok' ? 'ok' : status.status === 'stale' ? 'offline' : 'no_data',
+    level: status.level,
+    speedKmh: status.status === 'ok' ? speed : null,
+    latestKmh: status.status === 'ok' ? sensor.averageSpeed : null,
+    percent: status.percent,
+    samples: samples?.length ?? 0,
+    vehicleCount: sensor.vehicleCount,
+    updatedAt: sensor.updatedAt,
+    source: 'iot',
+    sensorId: sensor.id,
   }
 }

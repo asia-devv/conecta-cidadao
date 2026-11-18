@@ -41,18 +41,19 @@ npm ci
 
 ## Variáveis de ambiente
 
-Nenhuma é obrigatória e o projeto não usa arquivo `.env`. Há duas opções de build, passadas na linha de comando:
+Nenhuma é obrigatória. As opções de build vão na linha de comando; o servidor FIWARE padrão pode ir num `.env.local` (copie o [`.env.example`](.env.example)):
 
-| Variável             | Onde é lida       | Efeito                                                                                       |
-| -------------------- | ----------------- | -------------------------------------------------------------------------------------------- |
-| `APP_BASE`           | `vite.config.js`  | Caminho base do build (padrão `/`). Use `./` para hospedar em qualquer subcaminho.           |
-| `VITE_ROUTER=memory` | `src/app/App.jsx` | Usa `MemoryRouter`: o endereço não muda (para páginas incorporadas que não controlam a URL). |
+| Variável             | Onde é lida                     | Efeito                                                                                        |
+| -------------------- | ------------------------------- | --------------------------------------------------------------------------------------------- |
+| `APP_BASE`           | `vite.config.js`                | Caminho base do build (padrão `/`). Use `./` para hospedar em qualquer subcaminho.            |
+| `VITE_ROUTER=memory` | `src/app/App.jsx`               | Usa `MemoryRouter`: o endereço não muda (para páginas incorporadas que não controlam a URL).  |
+| `VITE_FIWARE_SERVER` | `src/services/fiwareService.js` | IPv4 do FIWARE que o mapa consulta sem precisar configurar no painel (o do painel vale mais). |
 
 ```bash
 VITE_ROUTER=memory APP_BASE=./ npm run build
 ```
 
-O `.gitignore` já ignora `.env` e `.env.*`. Não versione chaves nem credenciais.
+O `.gitignore` já ignora `.env` e `.env.*` (menos o `.env.example`). Não versione chaves nem credenciais.
 
 ## Banco de dados e serviços externos
 
@@ -73,7 +74,7 @@ npm run build        # gera dist/
 npm run preview      # serve dist/ em http://localhost:4173
 ```
 
-O proxy `/api/fiware` só existe em `npm run dev` e `npm run preview`. Um build estático publicado em outro servidor funciona normalmente, mas sem os sensores IoT reais (o mapa usa a simulação).
+O proxy `/api/fiware` só existe em `npm run dev` e `npm run preview`. Um build estático publicado em outro servidor funciona normalmente, mas sem os sensores IoT reais (as vias do mapa ficam cinza, "Sem dados").
 
 ### Contas de demonstração
 
@@ -155,6 +156,8 @@ sensor (ESP32/Wokwi ou npm run iot:simular)
             └─ app: POST /api/fiware (proxy do servidor do Vite) → painel e mapa
 ```
 
+O mapa também lê a entidade `Traffic` do projeto [smart-traffic](https://github.com/Leonardo-Daniel-SC/smart-traffic) (`urn:ngsi-ld:Traffic:003`, campo `speed_kmh`) e a desenha na Marginal Tietê, como lá.
+
 1. Suba uma stack FIWARE com Orion, IoT Agent UltraLight e Mosquitto, com as portas 1026, 1883 e 4041 liberadas (o projeto foi pensado para a stack Docker do repositório `fabiocabrini/fiware`).
 2. Rode o app com `npm run dev` (ou `npm run preview`).
 3. Em **Painel → Parâmetros → Dispositivos IoT**, informe o IPv4 do servidor e cadastre sensores escolhendo a via. O painel mostra a média, a diferença para a velocidade máxima e a situação (atualiza a cada 5 s). Também permite enviar uma leitura de teste ou remover o sensor.
@@ -168,7 +171,7 @@ sensor (ESP32/Wokwi ou npm run iot:simular)
 
 5. Opcionalmente, importe [`docs/postman/conecta-cidadao-iot.postman_collection.json`](docs/postman/conecta-cidadao-iot.postman_collection.json) no Postman e preencha `fiware_ip`.
 
-O proxy (`server/fiwareProxy.js`) só aceita IPv4 nas portas 1026, 4041 e 8666, caminhos sem `..` e métodos HTTP comuns, e usa `fiware-service: smart` e `fiware-servicepath: /`. No mapa, vias com sensor usam a leitura real; se o FIWARE não responder, o mapa avisa e volta à simulação.
+O proxy (`server/fiwareProxy.js`) só aceita IPv4 nas portas 1026, 4041 e 8666, caminhos sem `..` e métodos HTTP comuns, e usa `fiware-service: smart` e `fiware-servicepath: /`. Na camada **Trânsito** do mapa, o app consulta o Orion a cada segundo e pinta cada via pela média dos últimos 30 s em relação à velocidade máxima dela; via sem sensor ou sem medição recente fica cinza ("Sem dados"). Se o FIWARE não responder, o mapa avisa. Detalhes e como incluir vias: [`docs/vias-monitoradas.md`](docs/vias-monitoradas.md).
 
 ## Desenvolvimento
 
@@ -180,7 +183,7 @@ O proxy (`server/fiwareProxy.js`) só aceita IPv4 nas portas 1026, 4041 e 8666, 
 - **Serviços:** as telas só chamam funções assíncronas de `src/services/`, que lançam `ServiceError(code, message)` com a mensagem pronta para exibir. Validações usam `parseOrThrow` (Zod) e gravações obrigatórias usam `writeOrThrow`.
 - **Estilo:** componentes usam só os tokens semânticos de `src/index.css` (`bg-surface`, `text-ink`…), nunca cores literais. O significado nunca depende só da cor (sempre há ícone e texto).
 - **Testes:** ficam ao lado do código (`*.test.js`/`*.test.jsx`). `src/test/setup.js` limpa `localStorage` e IndexedDB a cada teste. `src/test/themes.test.js` confere o contraste WCAG de todos os modos de cor no CSS real.
-- **Documentos de apoio:** [`docs/validacao-em-aparelho.md`](docs/validacao-em-aparelho.md) (roteiro de teste em celular e com leitor de tela) e [`docs/migracao-backend.md`](docs/migracao-backend.md) (como trocar os serviços por uma API).
+- **Documentos de apoio:** [`docs/validacao-em-aparelho.md`](docs/validacao-em-aparelho.md) (roteiro de teste em celular e com leitor de tela), [`docs/migracao-backend.md`](docs/migracao-backend.md) (como trocar os serviços por uma API) e [`docs/vias-monitoradas.md`](docs/vias-monitoradas.md) (vias do trânsito e de onde vem o traçado).
 
 ## Limitações conhecidas
 
@@ -188,6 +191,7 @@ O proxy (`server/fiwareProxy.js`) só aceita IPv4 nas portas 1026, 4041 e 8666, 
 - Não foi validado em aparelho físico nem com VoiceOver ou TalkBack.
 - As notificações guardam as preferências, mas não enviam avisos ao celular.
 - Pontos de apoio, órgãos responsáveis, alertas e rotas alternativas são fictícios. As estações de metrô e trem são reais, mas da rede de 2017.
+- O traçado das vias do trânsito vem dos percursos de ônibus da SPTrans de 2017; só São Paulo tem vias monitoradas. Os ônibus do mapa continuam simulados e esquemáticos (retas entre bairros).
 - O mapa usa tiles do OpenStreetMap, adequados só para demonstração.
 - O FIWARE foi verificado com testes automatizados e uma instalação mínima, não com a stack Docker completa.
 - `npm audit` aponta alertas de severidade alta em `picomatch`, usado por ferramentas de desenvolvimento (Vite e Vitest). A correção sugerida rebaixa o Vitest para uma versão incompatível, por isso não foi aplicada.

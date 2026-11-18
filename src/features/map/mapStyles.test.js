@@ -3,10 +3,10 @@ import { TRAFFIC_STYLES, trafficLineStyle } from './mapStyles.js'
 
 describe('estilos do trânsito no mapa', () => {
   it('cada nível tem um padrão de traço diferente, não só uma cor', () => {
-    const signatures = Object.values(TRAFFIC_STYLES).map(
-      (s) => `${s.dashArray}|${s.weight}`,
-    )
-    expect(new Set(signatures).size).toBe(signatures.length)
+    // com dados, cada nível tem um traço próprio (sem dados se distingue pela cor cinza e pelo texto)
+    const { free, moderate, heavy } = TRAFFIC_STYLES
+    const signatures = [free, moderate, heavy].map((s) => `${s.dashArray}|${s.weight}`)
+    expect(new Set(signatures).size).toBe(3)
   })
 
   it('o congestionamento intenso é o traço mais grosso', () => {
@@ -14,12 +14,15 @@ describe('estilos do trânsito no mapa', () => {
     expect(TRAFFIC_STYLES.heavy.weight).toBe(heaviest)
   })
 
-  it('nível desconhecido cai no estilo "sem leitura"', () => {
-    expect(trafficLineStyle('qualquer-coisa').className).toBe('nr-line-unknown')
+  it('nível desconhecido cai no estilo "sem dados" (cinza contínuo, como no smart-traffic)', () => {
+    expect(trafficLineStyle('qualquer-coisa')).toMatchObject({
+      className: 'nr-line-unknown',
+      dashArray: null,
+    })
   })
 
-  it('traços tracejados têm ponta arredondada; o contínuo não', () => {
-    expect(trafficLineStyle('free').lineCap).toBe('butt')
+  it('pontas arredondadas, como no smart-traffic', () => {
+    expect(trafficLineStyle('free').lineCap).toBe('round')
     expect(trafficLineStyle('heavy').lineCap).toBe('round')
   })
 })

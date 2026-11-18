@@ -7,7 +7,8 @@ import { Icon } from '../../components/ui/Icon.jsx'
 import { Notice } from '../../components/ui/Notice.jsx'
 import { Skeleton } from '../../components/ui/States.jsx'
 import { TrafficBadge } from '../../components/ui/TrafficBadge.jsx'
-import { MOBILITY_CITIES } from '../../data/seedMobility.js'
+import { MONITORED_ROADS } from '../../data/monitoredRoads.js'
+import { getCity } from '../../domain/places.js'
 import { SENSOR_ID, sensorStatus, topicOf, ultralightPayload } from '../../domain/iot.js'
 import {
   checkConnection,
@@ -25,15 +26,15 @@ import { useAsyncAction } from '../../utils/useAsyncAction.js'
 
 const POLL_MS = 5_000
 
-/** Vias simuladas que podem receber um sensor, com a velocidade máxima de cada uma. */
-const ROADS = MOBILITY_CITIES.flatMap((city) =>
-  city.segments.map((segment) => ({
-    segmentId: segment.id,
-    roadName: segment.name,
-    cityName: city.name,
-    maxSpeed: segment.sensor.freeFlowKmh,
-  })),
-)
+/** Vias do mapa que podem receber um sensor, com a velocidade máxima de cada uma. */
+const ROADS = MONITORED_ROADS.map((road) => ({
+  segmentId: road.id,
+  roadName: road.stretch ? `${road.name} (${road.stretch})` : road.name,
+  cityId: road.cityId,
+  cityName: getCity(road.cityId)?.name ?? road.cityId,
+  maxSpeed: road.maxSpeed,
+}))
+const CITIES_WITH_ROADS = [...new Set(ROADS.map((r) => r.cityId))]
 const roadOf = (segmentId) => ROADS.find((r) => r.segmentId === segmentId)
 
 function ServerForm({ server, onChange }) {
@@ -250,13 +251,13 @@ function AddSensorForm({ server, existingIds, onAdded }) {
           onChange={(e) => setId(e.target.value.trim())}
         />
         <SelectField
-          label="Via monitorada (simulada)"
+          label="Via monitorada"
           value={segmentId}
           onChange={(e) => setSegmentId(e.target.value)}
         >
-          {MOBILITY_CITIES.map((city) => (
-            <optgroup key={city.id} label={city.name}>
-              {ROADS.filter((r) => r.cityName === city.name).map((road) => (
+          {CITIES_WITH_ROADS.map((cityId) => (
+            <optgroup key={cityId} label={getCity(cityId)?.name}>
+              {ROADS.filter((r) => r.cityId === cityId).map((road) => (
                 <option key={road.segmentId} value={road.segmentId}>
                   {road.roadName} · máx. {road.maxSpeed} km/h
                 </option>
@@ -344,8 +345,9 @@ export function IotDevicesSection() {
       <p className="text-sm text-ink-muted">
         Sensores que medem a velocidade média numa via, ligados ao FIWARE (Orion + IoT
         Agent MQTT), no mesmo padrão do projeto Vinheria. Há congestionamento quando a
-        média fica abaixo da velocidade máxima da via, pelos limites acima. As vias são
-        simuladas; os dados recebidos são reais.
+        média fica abaixo da velocidade máxima da via, pelos limites acima. As vias seguem
+        o traçado real das ruas; o sensor do projeto smart-traffic (entidade Traffic,
+        speed_kmh) também é lido e vale para a Marginal Tietê.
       </p>
 
       <ServerForm

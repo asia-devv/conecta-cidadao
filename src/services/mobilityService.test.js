@@ -12,16 +12,19 @@ describe('getMobilitySnapshot', () => {
     })
   })
 
-  it('devolve trechos com leitura e linhas com ônibus e paradas', async () => {
+  it('devolve as vias reais (sem sensor: sem dados) e linhas com ônibus e paradas', async () => {
     goToLocalHour(12)
     const snap = await getMobilitySnapshot('sao-paulo')
     expect(snap.cityName).toBe('São Paulo')
-    expect(snap.segments.length).toBeGreaterThan(5)
-    expect(snap.lines.length).toBeGreaterThan(1)
+    expect(snap.segments.length).toBeGreaterThan(10)
+    expect(snap.segments[0]).toMatchObject({ id: 'sp-marginal-tiete', freeFlowKmh: 60 })
     for (const segment of snap.segments) {
-      expect(segment.path).toHaveLength(2)
-      expect(['ok', 'offline']).toContain(segment.reading.status)
+      // traçado da rua (muitos pontos), não uma reta entre dois bairros
+      expect(segment.path.length).toBeGreaterThanOrEqual(10)
+      expect(segment.reading).toMatchObject({ status: 'no_data', level: 'unknown' })
     }
+    expect(snap.trafficBounds).not.toBeNull()
+    expect(snap.lines.length).toBeGreaterThan(1)
     for (const line of snap.lines) {
       expect(line.running).toBe(true)
       expect(line.buses.length).toBeGreaterThan(0)
@@ -50,13 +53,11 @@ describe('getMobilitySnapshot', () => {
     }
   })
 
-  it('o pico da manhã tem mais trechos intensos que o fim da noite', async () => {
-    const heavy = async (hour) => {
-      goToLocalHour(hour)
-      const snap = await getMobilitySnapshot('sao-paulo')
-      return snap.segments.filter((s) => s.reading.level === 'heavy').length
-    }
-    expect(await heavy(8)).toBeGreaterThan(await heavy(23))
+  it('municípios sem vias monitoradas não desenham trânsito', async () => {
+    const snap = await getMobilitySnapshot('santos')
+    expect(snap.segments).toEqual([])
+    expect(snap.trafficBounds).toBeNull()
+    expect(snap.lines.length).toBeGreaterThan(0)
   })
 
   it('os ônibus se mexem com o relógio', async () => {
@@ -67,15 +68,5 @@ describe('getMobilitySnapshot', () => {
     expect(after.lines[0].buses[0].position).not.toEqual(
       before.lines[0].buses[0].position,
     )
-  })
-
-  it('limites personalizados mudam a classificação', async () => {
-    goToLocalHour(12)
-    const normal = await getMobilitySnapshot('sao-paulo')
-    const strict = await getMobilitySnapshot('sao-paulo', {
-      thresholds: { freeFrom: 99, heavyBelow: 98 },
-    })
-    const free = (s) => s.segments.filter((x) => x.reading.level === 'free').length
-    expect(free(strict)).toBeLessThanOrEqual(free(normal))
   })
 })

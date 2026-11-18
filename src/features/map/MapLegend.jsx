@@ -4,8 +4,8 @@ import './map.css'
 const ITEMS = [
   ['free', 'Livre'],
   ['moderate', 'Moderado'],
-  ['heavy', 'Intenso'],
-  ['unknown', 'Sem leitura'],
+  ['heavy', 'Congestionado'],
+  ['unknown', 'Sem dados'],
 ]
 
 /** Legenda do traço no mapa: mostra o PADRÃO de cada nível, não só a cor. */
@@ -28,7 +28,7 @@ export function MapLegend() {
                 className={style.className}
                 strokeWidth={style.weight}
                 strokeDasharray={style.dashArray ?? undefined}
-                strokeLinecap={style.dashArray ? 'round' : 'butt'}
+                strokeLinecap="round"
               />
             </svg>
             {label}

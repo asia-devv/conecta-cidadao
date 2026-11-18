@@ -26,6 +26,7 @@ import { MapLegend } from './MapLegend.jsx'
 import { RailPanel } from './RailPanel.jsx'
 import { railLine, stationPosition } from './railHelpers.js'
 import { TrafficPanel } from './TrafficPanel.jsx'
+import { useLiveTraffic } from './useLiveTraffic.js'
 
 // O Leaflet só é baixado quando a aba Mapa é aberta: o resto do app não paga por ele.
 const MapView = lazy(() => import('./MapView.jsx'))
@@ -47,6 +48,41 @@ const REFRESH_MS = 15_000
 function defaultCityId(account) {
   const home = cityIdOf(account?.neighborhoodId)
   return MOBILITY_CITIES.some((c) => c.id === home) ? home : 'sao-paulo'
+}
+
+/** De onde vêm os dados da camada Trânsito (e por que uma via pode estar cinza). */
+function TrafficSourceNote({ iot, live, hasRoads }) {
+  if (!hasRoads) return null
+  if (!live.server) {
+    return (
+      <Notice tone="info" title="Nenhum servidor FIWARE configurado">
+        <p>
+          Sem sensores, as vias aparecem cinza (sem dados). A administração conecta o
+          servidor em Parâmetros → Dispositivos IoT; também dá para definir
+          VITE_FIWARE_SERVER no arquivo .env.local.
+        </p>
+      </Notice>
+    )
+  }
+  if (live.isError || iot?.status === 'error') {
+    return (
+      <Notice tone="warn" title="Sensores IoT fora do ar">
+        <p>
+          O servidor FIWARE ({live.server}) não respondeu. As vias ficam sem dados até ele
+          voltar.
+        </p>
+      </Notice>
+    )
+  }
+  const count = live.readings.size || iot?.count || 0
+  return (
+    <p className="text-sm text-ink-muted">
+      {count === 0
+        ? `Conectado ao FIWARE (${live.server}), mas nenhum sensor está ligado a estas vias.`
+        : `${count} ${count === 1 ? 'via com sensor' : 'vias com sensores'} IoT (FIWARE): cor pela média dos últimos 30 s, consultada a cada segundo.`}{' '}
+      Vias sem sensor ficam cinza.
+    </p>
+  )
 }
 
 /**
@@ -151,6 +187,16 @@ export function MapPage() {
   const activeMode = modes.some((m) => m.id === mode) ? mode : 'traffic'
   const favorites = account?.favoriteStations ?? []
 
+  // Trânsito ao vivo (média de 30 s, consulta a cada 1 s), por cima do retrato do serviço.
+  const live = useLiveTraffic(activeMode === 'traffic', snapshot?.thresholds)
+  const shown = snapshot && {
+    ...snapshot,
+    segments: snapshot.segments.map((s) => ({
+      ...s,
+      reading: live.readings.get(s.id) ?? s.reading,
+    })),
+  }
+
   const overlay =
     view && !view.unsupported && view.cityId === cityId
       ? {
@@ -228,8 +274,9 @@ export function MapPage() {
       {!overlay && (
         <Notice tone="info">
           <p>
-            <strong>Trânsito e ônibus são simulados e esquemáticos:</strong> os trechos
-            ligam bairros em linha reta. Estações de metrô e trem são reais (rede de
+            <strong>Trânsito:</strong> vias reais, coloridas pelos sensores IoT (FIWARE);
+            sem sensor, ficam cinza. <strong>Ônibus</strong> são simulados e esquemáticos
+            (ligam bairros em linha reta). Estações de metrô e trem são reais (rede de
             2017); alertas, pontos de apoio e rotas alternativas são de demonstração.
           </p>
           <p>
@@ -272,7 +319,7 @@ export function MapPage() {
         <>
           <Suspense fallback={<Skeleton className="h-72 w-full" />}>
             <MapView
-              snapshot={snapshot}
+              snapshot={shown}
               mode={activeMode}
               selectedLineId={selectedLineId}
               selectedSegmentId={selectedSegmentId}
@@ -283,24 +330,15 @@ export function MapPage() {
             />
           </Suspense>
           <p className="flex flex-wrap items-center gap-2 text-sm text-ink-muted">
-            <SimulatedBadge />
+            {activeMode !== 'traffic' && <SimulatedBadge />}
             Atualizado às {formatClock(snapshot.at)} · {snapshot.cityName}
           </p>
-          {snapshot.iot?.status === 'connected' && snapshot.iot.count > 0 && (
-            <p className="text-sm text-ink-muted">
-              {snapshot.iot.count === 1
-                ? '1 via usa um sensor IoT real (FIWARE).'
-                : `${snapshot.iot.count} vias usam sensores IoT reais (FIWARE).`}{' '}
-              As demais seguem simuladas.
-            </p>
-          )}
-          {snapshot.iot?.status === 'error' && (
-            <Notice tone="warn" title="Sensores IoT fora do ar">
-              <p>
-                O servidor FIWARE configurado não respondeu. O mapa usa a simulação até
-                ele voltar.
-              </p>
-            </Notice>
+          {activeMode === 'traffic' && (
+            <TrafficSourceNote
+              iot={snapshot.iot}
+              live={live}
+              hasRoads={snapshot.segments.length > 0}
+            />
           )}
           {tilesFailed && (
             <Notice tone="warn" title="O mapa-base não carregou">
@@ -345,7 +383,8 @@ export function MapPage() {
 
           {activeMode === 'traffic' && (
             <TrafficPanel
-              segments={snapshot.segments}
+              segments={shown.segments}
+              cityName={snapshot.cityName}
               thresholds={snapshot.thresholds}
               selectedId={selectedSegmentId}
               onSelect={setSelectedSegmentId}

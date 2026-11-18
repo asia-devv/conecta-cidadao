@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
+  liveReading,
+  recordSamples,
+  windowAverage,
   deviceProvisioning,
   mergeSensors,
   parseServer,
@@ -110,6 +113,43 @@ describe('sensorStatus: média captada x máxima da via', () => {
     expect(sensorStatus({ averageSpeed: null, maxSpeed: 60 }, NOW).status).toBe('no_data')
     expect(sensorStatus(sensor(40, 30), NOW)).toMatchObject({
       status: 'stale',
+      level: 'unknown',
+    })
+  })
+})
+
+describe('média de 30 s (como no smart-traffic)', () => {
+  const at = (s) => new Date(NOW.getTime() - s * 1000).toISOString()
+
+  it('só conta medição nova quando o TimeInstant muda e descarta as antigas', () => {
+    const history = new Map()
+    const t = NOW.getTime()
+    recordSamples(history, [{ id: '003', averageSpeed: 30, updatedAt: at(40) }], t)
+    recordSamples(history, [{ id: '003', averageSpeed: 20, updatedAt: at(10) }], t)
+    recordSamples(history, [{ id: '003', averageSpeed: 20, updatedAt: at(10) }], t) // repetida
+    recordSamples(history, [{ id: '003', averageSpeed: 10, updatedAt: at(2) }], t)
+    expect(history.get('003').map((s) => s.speed)).toEqual([20, 10])
+    expect(windowAverage(history.get('003'))).toBe(15)
+    expect(windowAverage([])).toBeNull()
+  })
+
+  it('a cor sai da média; "agora" mostra a última medição', () => {
+    const sensor = { id: '003', averageSpeed: 10, maxSpeed: 60, updatedAt: at(2) }
+    const reading = liveReading(sensor, [{ speed: 50 }, { speed: 40 }], NOW)
+    expect(reading).toMatchObject({
+      status: 'ok',
+      speedKmh: 45,
+      latestKmh: 10,
+      level: 'free',
+      samples: 2,
+    })
+  })
+
+  it('sem medição na janela, usa a última leitura se ainda for recente', () => {
+    const sensor = { id: '003', averageSpeed: 12, maxSpeed: 60, updatedAt: at(60) }
+    expect(liveReading(sensor, [], NOW)).toMatchObject({ speedKmh: 12, level: 'heavy' })
+    expect(liveReading({ ...sensor, updatedAt: at(60 * 20) }, [], NOW)).toMatchObject({
+      status: 'offline',
       level: 'unknown',
     })
   })

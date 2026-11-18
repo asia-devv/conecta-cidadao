@@ -88,6 +88,7 @@ export default function MapView({
       snapshot.cityId,
       mode,
       selectedLineId,
+      selectedSegmentId,
       rail?.selectedLineId,
       overlay?.id,
       overlay?.selectedRouteIndex,
@@ -95,10 +96,20 @@ export default function MapView({
     ].join('|')
     if (lastFramingRef.current !== framing) {
       lastFramingRef.current = framing
-      map.fitBounds(framingBounds({ snapshot, mode, selectedLineId, rail, overlay }), {
-        padding: [28, 28],
-        maxZoom: 16,
-      })
+      map.fitBounds(
+        framingBounds({
+          snapshot,
+          mode,
+          selectedLineId,
+          selectedSegmentId,
+          rail,
+          overlay,
+        }),
+        {
+          padding: [28, 28],
+          maxZoom: 16,
+        },
+      )
     }
 
     layer.clearLayers()
@@ -114,7 +125,7 @@ export default function MapView({
       <div
         ref={containerRef}
         role="region"
-        aria-label="Mapa esquemático. As listas abaixo trazem as mesmas informações."
+        aria-label="Mapa de mobilidade. As listas abaixo trazem as mesmas informações."
         className="nr-map h-72 overflow-hidden rounded-card hairline border-line"
       />
       {coarsePointer && (
@@ -126,7 +137,14 @@ export default function MapView({
   )
 }
 
-function framingBounds({ snapshot, mode, selectedLineId, rail, overlay }) {
+function framingBounds({
+  snapshot,
+  mode,
+  selectedLineId,
+  selectedSegmentId,
+  rail,
+  overlay,
+}) {
   if (overlay) {
     const points = [overlay.center]
     if (overlay.places) {
@@ -142,24 +160,75 @@ function framingBounds({ snapshot, mode, selectedLineId, rail, overlay }) {
     const line = rail.lines.find((l) => l.id === rail.selectedLineId)
     return boundsOf(line ? line.path : rail.lines.flatMap((l) => l.path))
   }
+  if (mode === 'traffic' && snapshot.trafficBounds) {
+    const segment = snapshot.segments.find((s) => s.id === selectedSegmentId)
+    return segment ? boundsOf(segment.path) : snapshot.trafficBounds
+  }
   const line = mode === 'bus' && snapshot.lines.find((l) => l.id === selectedLineId)
   return line ? boundsOf(line.path) : snapshot.bounds
 }
 
+const LEVEL_LABEL = {
+  free: 'Livre',
+  moderate: 'Moderado',
+  heavy: 'Congestionado',
+  unknown: 'Sem dados',
+}
+
+const escapeHtml = (text) =>
+  String(text).replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`)
+
+/** Conteúdo do balão da via (como no smart-traffic: nome, velocidade e estado). */
+function roadPopup(segment) {
+  const { reading } = segment
+  const speed =
+    reading.status === 'ok'
+      ? `${reading.speedKmh.toFixed(1).replace('.', ',')} km/h (máx. ${segment.freeFlowKmh})`
+      : 'Sem dados'
+  return `<strong>${escapeHtml(segment.name)}</strong>${
+    segment.stretch ? `<br>${escapeHtml(segment.stretch)}` : ''
+  }<br>Velocidade média: ${speed}<br>Estado: <strong>${LEVEL_LABEL[reading.level]}</strong>${
+    reading.sensorId ? `<br>Sensor: ${escapeHtml(reading.sensorId)}` : ''
+  }`
+}
+
+/**
+ * Vias monitoradas, desenhadas como no smart-traffic: um halo largo e
+ * translúcido e a linha principal por cima, na cor do estado (cinza = sem
+ * dados), seguindo o traçado da rua. Onde há sensor, um marcador no ponto dele.
+ */
 function drawTraffic(layer, snapshot, selectedSegmentId, callbacks) {
   for (const segment of snapshot.segments) {
     const style = trafficLineStyle(segment.reading.level)
-    if (segment.id === selectedSegmentId) {
-      L.polyline(segment.path, {
-        className: 'nr-halo',
-        weight: style.weight + 10,
-        interactive: false,
-      }).addTo(layer)
-    }
-    L.polyline(segment.path, style)
+    const selected = segment.id === selectedSegmentId
+    L.polyline(segment.path, {
+      className: `${style.className} nr-road-halo`,
+      weight: selected ? 18 : 12,
+      opacity: selected ? 0.35 : 0.18,
+      lineCap: 'round',
+      lineJoin: 'round',
+      interactive: false,
+    }).addTo(layer)
+    L.polyline(segment.path, { ...style, lineJoin: 'round' })
       .bindTooltip(segment.name, { sticky: true })
+      .bindPopup(roadPopup(segment))
       .on('click', () => callbacks.current.onSelectSegment?.(segment.id))
       .addTo(layer)
+    if (segment.reading.source === 'iot') {
+      L.marker(segment.sensorAt, {
+        keyboard: false,
+        icon: L.divIcon({
+          className: '',
+          html: '<span class="nr-sensor" aria-hidden="true"></span>',
+          iconSize: [22, 22],
+          iconAnchor: [11, 11],
+        }),
+      })
+        .bindPopup(
+          `<strong>Estação de medição FIWARE</strong><br>${escapeHtml(segment.name)}<br>Sensor: ${escapeHtml(segment.reading.sensorId)}`,
+        )
+        .addTo(layer)
+    }
   }
 }
 

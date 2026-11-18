@@ -40,10 +40,10 @@ export function installFakeFiware({ online = true } = {}) {
     }
 
     if (port === '1026' && path === '/v2/entities' && metodo === 'GET') {
-      const type = new URLSearchParams(query).get('type')
+      const types = new URLSearchParams(query).get('type')?.split(',')
       return json(
         200,
-        [...entities.values()].filter((e) => !type || e.type === type),
+        [...entities.values()].filter((e) => !types || types.includes(e.type)),
       )
     }
     if (port === '1026' && path === '/v2/entities' && metodo === 'POST') {

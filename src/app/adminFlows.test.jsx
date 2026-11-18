@@ -332,7 +332,7 @@ describe('painel: dispositivos IoT (FIWARE)', () => {
     await user.type(within(section).getByLabelText(/ID do sensor/), '001')
     await user.selectOptions(
       within(section).getByLabelText(/Via monitorada/),
-      'sao-paulo-s1',
+      'sp-av-paulista',
     )
     await user.click(
       within(section).getByRole('button', { name: 'Cadastrar no IoT Agent' }),
@@ -345,7 +345,7 @@ describe('painel: dispositivos IoT (FIWARE)', () => {
     expect(fake.devices.has('traffic001')).toBe(true)
 
     const list = await within(section).findByRole('list', { name: 'Sensores IoT' })
-    expect(within(list).getByText('Sem leitura do sensor')).toBeInTheDocument()
+    expect(within(list).getByText('Sem dados')).toBeInTheDocument()
 
     await user.type(within(list).getByLabelText(/Leitura de teste/), '12')
     await user.click(within(list).getByRole('button', { name: 'Enviar ao Orion' }))

@@ -1,6 +1,7 @@
 import {
   API_KEY,
   ENTITY_TYPE,
+  REFERENCE_ENTITY_TYPE,
   deviceIdOf,
   deviceProvisioning,
   entityIdOf,
@@ -16,12 +17,19 @@ import { storage } from './storage.js'
  * O app fala com o FIWARE pelo proxy /api/fiware do servidor do Vite (veja
  * server/fiwareProxy.js), que só existe com `npm run dev` ou `npm run preview`.
  * O endereço do servidor FIWARE é escolhido pela administração e fica neste
- * aparelho, como no Vinheria-Full.
+ * aparelho, como no Vinheria-Full. Também dá para deixar um padrão para todos
+ * os navegadores com VITE_FIWARE_SERVER no .env.local (como o FIWARE_ORIGIN do
+ * smart-traffic); o que a administração escolher no painel vale mais.
  */
 
 const SERVER_KEY = 'fiware-server'
 
-export const getFiwareServer = () => storage.read(SERVER_KEY, null)
+/** IPv4 do .env.local (VITE_FIWARE_SERVER), se houver um válido. */
+export const defaultFiwareServer = () =>
+  parseServer(import.meta.env?.VITE_FIWARE_SERVER ?? '') ?? null
+
+export const getFiwareServer = () =>
+  storage.read(SERVER_KEY, null) ?? defaultFiwareServer()
 
 export function saveFiwareServer(text) {
   const host = parseServer(text)
@@ -82,11 +90,14 @@ export async function checkConnection(server) {
   return { version: res.data?.orion?.version ?? 'desconhecida' }
 }
 
+// Os dois formatos: os sensores deste app e o do smart-traffic (Traffic).
+const ENTITIES_PATH = `/v2/entities?type=${ENTITY_TYPE},${REFERENCE_ENTITY_TYPE}&options=keyValues&limit=200`
+
 /** Sensores cadastrados (IoT Agent) e suas últimas leituras (Orion). */
 export async function listTrafficSensors(server) {
   const [devices, entities] = await Promise.all([
     fiware(server, '/iot/devices?limit=200', { port: 4041 }).catch(() => null),
-    fiware(server, `/v2/entities?type=${ENTITY_TYPE}&options=keyValues&limit=200`),
+    fiware(server, ENTITIES_PATH),
   ])
   if (!entities.ok && !devices?.ok) {
     throw new ServiceError(
@@ -98,6 +109,21 @@ export async function listTrafficSensors(server) {
     devices?.ok ? (devices.data?.devices ?? []) : [],
     entities.ok && Array.isArray(entities.data) ? entities.data : [],
   )
+}
+
+/**
+ * Só as últimas leituras, direto do Orion (uma requisição). É o que o mapa
+ * consulta a cada segundo para calcular a média de 30 s.
+ */
+export async function listSensorReadings(server) {
+  const res = await fiware(server, ENTITIES_PATH)
+  if (!res.ok) {
+    throw new ServiceError(
+      'unreachable',
+      errorMessage(res.data, 'O Orion não respondeu.'),
+    )
+  }
+  return mergeSensors([], Array.isArray(res.data) ? res.data : [])
 }
 
 /** Cadastra o sensor no IoT Agent, ligado a uma via (simulada) e à velocidade máxima dela. */

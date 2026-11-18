@@ -24,7 +24,7 @@ vi.mock('./MapView.jsx', () => ({
         <button type="button" onClick={props.onTilesFailed}>
           simular falha dos tiles
         </button>
-        <button type="button" onClick={() => props.onSelectSegment('sao-paulo-s3')}>
+        <button type="button" onClick={() => props.onSelectSegment('sp-av-paulista')}>
           simular toque em trecho
         </button>
       </div>
@@ -107,7 +107,7 @@ describe('MapPage com o mapa', () => {
     expect(screen.queryByText('O mapa-base não carregou')).not.toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'simular falha dos tiles' }))
     expect(screen.getByText('O mapa-base não carregou')).toBeInTheDocument()
-    expect(screen.getByText('Ligação Pinheiros–Centro')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Av. Paulista' })).toBeInTheDocument()
   })
 })
 

@@ -1,3 +1,4 @@
+import { roadById, roadsOfCity } from '../data/monitoredRoads.js'
 import { MOBILITY_CITIES } from '../data/seedMobility.js'
 import {
   arrivalsAt,
@@ -7,49 +8,65 @@ import {
   withStopFractions,
 } from '../domain/buses.js'
 import { boundsOf, buildPath } from '../domain/geo.js'
-import { classifyTraffic, sensorReading, trafficRatio } from '../domain/traffic.js'
+import { classifyTraffic, trafficRatio } from '../domain/traffic.js'
 import { clock } from './clock.js'
 import { wait } from './latency.js'
 import { ServiceError } from './ServiceError.js'
-import { sensorStatus } from '../domain/iot.js'
+import { liveReading } from '../domain/iot.js'
 import { getFiwareServer, listTrafficSensors } from './fiwareService.js'
 import { getTrafficThresholds } from './settingsService.js'
 
 /**
- * Mobilidade: trânsito (sensores simulados) e ônibus (posições e previsões
- * simuladas). Tudo é calculado, a cada consulta, para o instante do relógio do app:
- * um backend de verdade devolveria o mesmo formato a partir de sensores e GPS.
+ * Mobilidade: trânsito (vias reais com sensores IoT/FIWARE) e ônibus (posições e
+ * previsões simuladas, calculadas para o instante do relógio do app).
+ *
+ * Trânsito: cada via monitorada (data/monitoredRoads.js) mostra a leitura do
+ * sensor ligado a ela; sem sensor ou sem leitura recente, "Sem dados" (cinza),
+ * como no projeto de referência smart-traffic. Nada é inventado nessa camada.
  */
 
 // Os percursos não mudam; prepará-los uma vez evita refazer as distâncias a cada leitura.
+/** O sensor do smart-traffic não manda a velocidade máxima: vale a da via. */
+export const withRoadMaxSpeed = (sensor) => ({
+  ...sensor,
+  maxSpeed: sensor.maxSpeed ?? roadById(sensor.segmentId)?.maxSpeed ?? null,
+})
+
+/** Via sem sensor ou sem leitura: cinza, sem número. */
+export const NO_DATA = Object.freeze({
+  status: 'no_data',
+  level: 'unknown',
+  speedKmh: null,
+  percent: null,
+  updatedAt: null,
+  source: null,
+})
+
 const PATHS = new Map(
   MOBILITY_CITIES.flatMap((city) => city.lines.map((l) => [l.id, buildPath(l.path)])),
 )
 
 /**
- * Leituras dos sensores IoT (FIWARE), quando a administração configurou um
- * servidor. Cada sensor monitora uma via (segmentId) e substitui a simulação
- * dela. Se o FIWARE não responder, o mapa segue com a simulação e avisa.
+ * Leituras dos sensores IoT (FIWARE), quando há servidor configurado. Cada
+ * sensor monitora uma via (segmentId). Se o FIWARE não responder, as vias
+ * ficam "Sem dados" e a tela avisa.
  */
-async function iotReadings(now, thresholds) {
+async function iotReadings(thresholds) {
   const server = getFiwareServer()
   const result = { bySegment: new Map(), status: server ? 'connected' : 'off', count: 0 }
   if (!server) return result
   try {
     const sensors = await listTrafficSensors(server)
+    // leituras do sensor usam a hora real (não a do relógio de demonstração)
+    const realNow = new Date()
     for (const sensor of sensors) {
-      if (!sensor.segmentId) continue
-      const status = sensorStatus(sensor, now, thresholds)
+      const road = roadById(sensor.segmentId)
+      if (!road) continue // sensor ligado a uma via que o mapa não conhece
       result.count += 1
-      result.bySegment.set(sensor.segmentId, {
-        status: status.status === 'ok' ? 'ok' : 'offline',
-        level: status.level,
-        speedKmh: status.status === 'ok' ? Math.round(sensor.averageSpeed) : null,
-        percent: status.percent,
-        updatedAt: sensor.updatedAt ?? now.toISOString(),
-        source: 'iot',
-        sensorId: sensor.id,
-      })
+      result.bySegment.set(
+        road.id,
+        liveReading(withRoadMaxSpeed(sensor), [], realNow, thresholds),
+      )
     }
   } catch {
     result.status = 'error'
@@ -75,14 +92,15 @@ export async function getMobilitySnapshot(
   const nowMs = now.getTime()
   const sensorsById = new Map(city.segments.map((s) => [s.id, s.sensor]))
 
-  const iot = await iotReadings(now, thresholds)
-  const segments = city.segments.map((segment) => ({
-    id: segment.id,
-    name: segment.name,
-    path: segment.path,
-    freeFlowKmh: segment.sensor.freeFlowKmh,
-    reading:
-      iot.bySegment.get(segment.id) ?? sensorReading(segment.sensor, now, thresholds),
+  const iot = await iotReadings(thresholds)
+  const segments = roadsOfCity(city.id).map((road) => ({
+    id: road.id,
+    name: road.name,
+    stretch: road.stretch ?? null,
+    path: road.path,
+    sensorAt: road.sensorAt ?? road.path[Math.floor(road.path.length / 2)],
+    freeFlowKmh: road.maxSpeed,
+    reading: iot.bySegment.get(road.id) ?? NO_DATA,
   }))
 
   const inService = isInService(now)
@@ -123,6 +141,7 @@ export async function getMobilitySnapshot(
       ...segments.flatMap((s) => s.path),
       ...lines.flatMap((l) => l.path),
     ]),
+    trafficBounds: segments.length ? boundsOf(segments.flatMap((s) => s.path)) : null,
     at: now.toISOString(),
     thresholds,
     iot: { status: iot.status, count: iot.count },
