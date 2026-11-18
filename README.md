@@ -114,7 +114,7 @@ O proxy `/api/fiware` só existe em `npm run dev` e `npm run preview`. Um build 
    ├─ context/           sessão, relógio, acessibilidade e useAccountGate
    ├─ data/              conteúdo fictício (seed) e rede real de metrô e trem (2017)
    ├─ domain/            regras de negócio puras (sem React nem serviços)
-   ├─ features/          uma pasta por área: home, state, community, map, auth, profile, admin, dev
+   ├─ features/          uma pasta por área: home, state, community, map, auth, profile, admin, lockscreen, dev
    ├─ services/          backend simulado: localStorage, IndexedDB, FIWARE
    ├─ utils/             funções e hooks pequenos (formatação, download, useAsyncAction…)
    └─ test/              apoio dos testes (FIWARE falso, relógio, leitura dos temas)
@@ -124,24 +124,26 @@ O proxy `/api/fiware` só existe em `npm run dev` e `npm run preview`. Um build 
 
 Menu inferior: **Início · Explorar (lupa) · + · Mapa · Perfil**. Em janelas a partir de 768 × 700 px o app aparece dentro de uma moldura de smartphone; em telas menores ocupa a tela toda.
 
-| Rota                         | Funcionalidade                                                                                    |
-| ---------------------------- | ------------------------------------------------------------------------------------------------- |
-| `/inicio`, `/inicio/:id`     | Alertas ativos e notícias dos municípios acompanhados. Tocar num alerta abre o mapa no local dele |
-| `/explorar`, `/explorar/:id` | Alertas e notícias estaduais e agenda de eventos; salvar evento, baixar `.ics` e compartilhar     |
-| `/relatar` (o "+")           | Relatar um problema com categoria, bairro, texto e foto; mostra relatos parecidos para apoiar     |
-| `/publicacao/:id`            | Relato com linha do tempo completa e órgão responsável (fictício)                                 |
-| `/mapa`                      | Trânsito, ônibus, metrô e trem. Aceita `?alerta=<id>` e `?camada=metro`                           |
-| `/entrar`, `/cadastro`       | Entrada e cadastro simulados                                                                      |
-| `/acessibilidade`            | Modos de cor (padrão, vermelho-verde, azul-amarelo, alto contraste), ícones grandes, toque duplo  |
-| `/perfil` e subpáginas       | Meus relatos, notificações, estações favoritas, bairros acompanhados e configurações              |
-| `/admin/login`, `/admin`     | Acesso administrativo e visão geral da fila                                                       |
-| `/admin/ocorrencias[/:id]`   | Fila priorizada com filtros e atualização de status                                               |
-| `/admin/avisos`              | Avisos oficiais para um município ou bairro                                                       |
-| `/admin/parametros`          | Limites do trânsito e dispositivos IoT (FIWARE)                                                   |
-| `/dev/design-system`         | Guia de estilo vivo                                                                               |
+| Rota                         | Funcionalidade                                                                                         |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `/inicio`, `/inicio/:id`     | Alertas ativos e notícias dos municípios acompanhados. Tocar num alerta abre o mapa no local dele      |
+| `/explorar`, `/explorar/:id` | Alertas e notícias estaduais e agenda de eventos; salvar evento, baixar `.ics` e compartilhar          |
+| `/relatar` (o "+")           | Relatar um problema com categoria, bairro, texto e foto; mostra relatos parecidos para apoiar          |
+| `/publicacao/:id`            | Relato com linha do tempo completa e órgão responsável (fictício)                                      |
+| `/mapa`                      | Trânsito, ônibus, metrô e trem. Aceita `?alerta=<id>` e `?camada=metro`                                |
+| `/entrar`, `/cadastro`       | Entrada e cadastro simulados                                                                           |
+| `/tela-de-bloqueio`          | Simulação da tela de bloqueio com uma notificação de tempestade; tocar nela abre o Mapa com os abrigos |
+| `/acessibilidade`            | Modos de cor (padrão, vermelho-verde, azul-amarelo, alto contraste), ícones grandes, toque duplo       |
+| `/perfil` e subpáginas       | Meus relatos, notificações, estações favoritas, bairros acompanhados e configurações                   |
+| `/admin/login`, `/admin`     | Acesso administrativo e visão geral da fila                                                            |
+| `/admin/ocorrencias[/:id]`   | Fila priorizada com filtros e atualização de status                                                    |
+| `/admin/avisos`              | Avisos oficiais para um município ou bairro                                                            |
+| `/admin/parametros`          | Limites do trânsito e dispositivos IoT (FIWARE)                                                        |
+| `/dev/design-system`         | Guia de estilo vivo                                                                                    |
 
 Como usar alguns recursos:
 
+- **Notificação na tela de bloqueio** (`/tela-de-bloqueio`, ou Perfil → Notificações → "Ver como chega uma notificação"): mostra o celular bloqueado com um alerta de tempestade do município da pessoa (visitantes veem São Paulo). Tocar na notificação abre a aba Mapa no alerta, com os abrigos e pontos de apoio mais próximos.
 - **Relógio de demonstração** (Perfil → Configurações): adianta o tempo só neste aparelho, para ver o ciclo dos relatos andar, alertas expirarem e o trânsito mudar.
 - **Baixar ou excluir meus dados** (Perfil → Configurações): exporta um JSON com conta, relatos, apoios e eventos salvos, ou apaga tudo.
 - **Prioridade da fila** (`domain/priority.js`): a urgência vem da categoria do relato e sempre vem primeiro. Espera e apoios desempatam, somando no máximo 15 pontos. A tela de detalhe mostra a conta inteira.
@@ -189,7 +191,7 @@ O proxy (`server/fiwareProxy.js`) só aceita IPv4 nas portas 1026, 4041 e 8666, 
 
 - Sem backend: login, permissões e dados são simulados e vivem no navegador. Não há segurança real.
 - Não foi validado em aparelho físico nem com VoiceOver ou TalkBack.
-- As notificações guardam as preferências, mas não enviam avisos ao celular.
+- As notificações guardam as preferências, mas não enviam avisos ao celular; a tela de bloqueio é só uma simulação.
 - Pontos de apoio, órgãos responsáveis, alertas e rotas alternativas são fictícios. As estações de metrô e trem são reais, mas da rede de 2017.
 - O traçado das vias do trânsito vem dos percursos de ônibus da SPTrans de 2017; só São Paulo tem vias monitoradas. Os ônibus do mapa continuam simulados e esquemáticos (retas entre bairros).
 - O mapa usa tiles do OpenStreetMap, adequados só para demonstração.

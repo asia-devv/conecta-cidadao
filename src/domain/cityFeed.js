@@ -81,3 +81,18 @@ export function buildCityFeed(items, notices, { cityIds, now }) {
 export function mapLinkFor(alert) {
   return `/mapa?alerta=${encodeURIComponent(alert.id)}`
 }
+
+/**
+ * Alerta de tempestade para a notificação da tela de bloqueio (demonstração):
+ * o do município da pessoa, se houver; senão, o de São Paulo. Entre os do
+ * município, prefere um ativo e o mais novo. Sem nenhum, devolve null.
+ */
+export function stormAlertFor(items, { cityId, now }) {
+  const storms = items
+    .filter((i) => i.kind === 'alert' && i.alertType === 'storm' && i.target)
+    .filter((i) => time(i.publishedAt) <= now.getTime())
+  const rank = (a) =>
+    (a.cityId === cityId ? 0 : a.cityId === 'sao-paulo' ? 2 : 4) +
+    (alertState(a, now) === 'active' ? 0 : 1)
+  return [...storms].sort((a, b) => rank(a) - rank(b) || newest(a, b))[0] ?? null
+}

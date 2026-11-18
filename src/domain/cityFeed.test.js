@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { buildCityFeed, isStateTabItem, mapLinkFor, noticeToAlert } from './cityFeed.js'
+import {
+  buildCityFeed,
+  isStateTabItem,
+  mapLinkFor,
+  noticeToAlert,
+  stormAlertFor,
+} from './cityFeed.js'
 
 const NOW = new Date('2026-11-17T12:00:00Z')
 const at = (h) => new Date(NOW.getTime() + h * 3_600_000).toISOString()
@@ -84,5 +90,38 @@ describe('noticeToAlert', () => {
 
   it('o link do mapa leva o id do alerta', () => {
     expect(mapLinkFor({ id: 'seed-city-sp-a1' })).toBe('/mapa?alerta=seed-city-sp-a1')
+  })
+})
+
+describe('stormAlertFor', () => {
+  const now = new Date('2026-03-01T12:00:00Z')
+  const storm = (id, cityId, { pub = -1, exp = 5 } = {}) => ({
+    kind: 'alert',
+    id,
+    cityId,
+    alertType: 'storm',
+    target: { type: 'area', neighborhoodId: `${cityId}/x` },
+    publishedAt: new Date(now.getTime() + pub * 3_600_000).toISOString(),
+    expiresAt: new Date(now.getTime() + exp * 3_600_000).toISOString(),
+  })
+  const items = [
+    storm('sp', 'sao-paulo'),
+    storm('cps', 'campinas'),
+    storm('cps-old', 'campinas', { pub: -10, exp: -2 }),
+    { kind: 'alert', id: 'flood', cityId: 'santos', alertType: 'flood', target: {} },
+  ]
+
+  it('prefere a tempestade ativa do município da pessoa', () => {
+    expect(stormAlertFor(items, { cityId: 'campinas', now }).id).toBe('cps')
+  })
+
+  it('sem tempestade no município, usa a de São Paulo', () => {
+    expect(stormAlertFor(items, { cityId: 'santos', now }).id).toBe('sp')
+    expect(stormAlertFor(items, { cityId: null, now }).id).toBe('sp')
+  })
+
+  it('ignora alertas "do futuro" e devolve null sem tempestade', () => {
+    expect(stormAlertFor([storm('f', 'sao-paulo', { pub: 2 })], { now })).toBeNull()
+    expect(stormAlertFor([], { cityId: 'santos', now })).toBeNull()
   })
 })

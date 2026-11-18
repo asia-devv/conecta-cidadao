@@ -92,6 +92,10 @@ const SettingsPage = page(
   () => import('../features/profile/SettingsPage.jsx'),
   'SettingsPage',
 )
+const LockScreenPage = page(
+  () => import('../features/lockscreen/LockScreenPage.jsx'),
+  'LockScreenPage',
+)
 const StateDetailPage = page(
   () => import('../features/state/StateDetailPage.jsx'),
   'StateDetailPage',
@@ -141,6 +145,16 @@ export function AppRoutes() {
             <Route path="parametros" element={<AdminSettingsPage />} />
           </Route>
         </Route>
+
+        {/* Simulação da tela de bloqueio: dentro da moldura, sem cabeçalho nem menu. */}
+        <Route
+          path="/tela-de-bloqueio"
+          element={
+            <PhoneFrame>
+              <LockScreenPage />
+            </PhoneFrame>
+          }
+        />
 
         <Route element={<PhoneLayout />}>
           <Route index element={<Navigate to="/inicio" replace />} />

@@ -120,7 +120,9 @@ describe('MapPage com alerta', () => {
       }),
     ).toBeInTheDocument()
     expect(
-      screen.getByRole('heading', { name: 'Pontos de apoio mais próximos de Pinheiros' }),
+      screen.getByRole('heading', {
+        name: 'Abrigos e pontos de apoio mais próximos de Pinheiros',
+      }),
     ).toBeInTheDocument()
     const places = screen.getAllByRole('button', { name: /Fictíci/ })
     expect(places).toHaveLength(4)
