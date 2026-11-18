@@ -29,7 +29,7 @@ const EMPTY_TEXT = {
 }
 
 /**
- * Estado: alertas e notícias estaduais e a agenda de eventos (conteúdo fictício).
+ * Explorar: alertas e notícias estaduais e a agenda de eventos (conteúdo fictício).
  * Alertas e notícias de um município ficam no Início. A visão "Tudo" mostra só o que ainda vale; cada tipo, quando
  * escolhido, também lista o que já encerrou.
  */
@@ -71,7 +71,7 @@ export function StateFeedPage() {
         now={now}
         savePending={saveEvent.pendingId === item.id}
         onToggleSave={() => saveEvent.toggle(item)}
-        onOpen={() => navigate(`/estado/${item.id}`)}
+        onOpen={() => navigate(`/explorar/${item.id}`)}
       />
     </li>
   )
@@ -80,7 +80,7 @@ export function StateFeedPage() {
 
   return (
     <Page
-      title="Estado"
+      title="Explorar"
       description="Alertas e notícias que valem para todo o estado, e a agenda de eventos."
     >
       <Notice tone="info" title="Conteúdo de demonstração">

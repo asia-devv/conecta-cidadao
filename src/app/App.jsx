@@ -1,7 +1,14 @@
 import { Suspense, lazy } from 'react'
 import { createQueryClient } from './queryClient.js'
 import { QueryClientProvider } from '@tanstack/react-query'
-import { BrowserRouter, MemoryRouter, Navigate, Route, Routes } from 'react-router-dom'
+import {
+  BrowserRouter,
+  MemoryRouter,
+  Navigate,
+  Route,
+  Routes,
+  useParams,
+} from 'react-router-dom'
 import { AccessibilityProvider } from '../context/AccessibilityContext.jsx'
 import { ClockProvider } from '../context/ClockContext.jsx'
 import { SessionProvider } from '../context/SessionContext.jsx'
@@ -97,6 +104,12 @@ const Router = import.meta.env.VITE_ROUTER === 'memory' ? MemoryRouter : Browser
 const queryClient = createQueryClient()
 
 /** Tudo que aparece dentro da moldura de smartphone (ou em tela cheia no celular). */
+/** /estado/:id (nome antigo da aba) → /explorar/:id */
+function LegacyStateRedirect() {
+  const { id } = useParams()
+  return <Navigate to={`/explorar/${id}`} replace />
+}
+
 function PhoneLayout() {
   return (
     <PhoneFrame>
@@ -134,8 +147,11 @@ export function AppRoutes() {
           <Route path="inicio" element={<CityFeedPage />} />
           <Route path="inicio/:id" element={<StateDetailPage />} />
           <Route path="publicacao/:id" element={<PostDetailPage />} />
-          <Route path="estado" element={<StateFeedPage />} />
-          <Route path="estado/:id" element={<StateDetailPage />} />
+          <Route path="explorar" element={<StateFeedPage />} />
+          <Route path="explorar/:id" element={<StateDetailPage />} />
+          {/* endereços antigos da aba (antes "Estado") continuam funcionando */}
+          <Route path="estado" element={<Navigate to="/explorar" replace />} />
+          <Route path="estado/:id" element={<LegacyStateRedirect />} />
           <Route path="mapa" element={<MapPage />} />
           <Route path="acessibilidade" element={<AccessibilityPage />} />
           <Route element={<GuestOnly />}>

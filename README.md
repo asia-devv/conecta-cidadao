@@ -121,23 +121,23 @@ O proxy `/api/fiware` só existe em `npm run dev` e `npm run preview`. Um build 
 
 ## Principais funcionalidades
 
-Menu inferior: **Início · Estado · + · Mapa · Perfil**. Em janelas a partir de 768 × 700 px o app aparece dentro de uma moldura de smartphone; em telas menores ocupa a tela toda.
+Menu inferior: **Início · Explorar (lupa) · + · Mapa · Perfil**. Em janelas a partir de 768 × 700 px o app aparece dentro de uma moldura de smartphone; em telas menores ocupa a tela toda.
 
-| Rota                       | Funcionalidade                                                                                    |
-| -------------------------- | ------------------------------------------------------------------------------------------------- |
-| `/inicio`, `/inicio/:id`   | Alertas ativos e notícias dos municípios acompanhados. Tocar num alerta abre o mapa no local dele |
-| `/estado`, `/estado/:id`   | Alertas e notícias estaduais e agenda de eventos; salvar evento, baixar `.ics` e compartilhar     |
-| `/relatar` (o "+")         | Relatar um problema com categoria, bairro, texto e foto; mostra relatos parecidos para apoiar     |
-| `/publicacao/:id`          | Relato com linha do tempo completa e órgão responsável (fictício)                                 |
-| `/mapa`                    | Trânsito, ônibus, metrô e trem. Aceita `?alerta=<id>` e `?camada=metro`                           |
-| `/entrar`, `/cadastro`     | Entrada e cadastro simulados                                                                      |
-| `/acessibilidade`          | Modos de cor (padrão, vermelho-verde, azul-amarelo, alto contraste), ícones grandes, toque duplo  |
-| `/perfil` e subpáginas     | Meus relatos, notificações, estações favoritas, bairros acompanhados e configurações              |
-| `/admin/login`, `/admin`   | Acesso administrativo e visão geral da fila                                                       |
-| `/admin/ocorrencias[/:id]` | Fila priorizada com filtros e atualização de status                                               |
-| `/admin/avisos`            | Avisos oficiais para um município ou bairro                                                       |
-| `/admin/parametros`        | Limites do trânsito e dispositivos IoT (FIWARE)                                                   |
-| `/dev/design-system`       | Guia de estilo vivo                                                                               |
+| Rota                         | Funcionalidade                                                                                    |
+| ---------------------------- | ------------------------------------------------------------------------------------------------- |
+| `/inicio`, `/inicio/:id`     | Alertas ativos e notícias dos municípios acompanhados. Tocar num alerta abre o mapa no local dele |
+| `/explorar`, `/explorar/:id` | Alertas e notícias estaduais e agenda de eventos; salvar evento, baixar `.ics` e compartilhar     |
+| `/relatar` (o "+")           | Relatar um problema com categoria, bairro, texto e foto; mostra relatos parecidos para apoiar     |
+| `/publicacao/:id`            | Relato com linha do tempo completa e órgão responsável (fictício)                                 |
+| `/mapa`                      | Trânsito, ônibus, metrô e trem. Aceita `?alerta=<id>` e `?camada=metro`                           |
+| `/entrar`, `/cadastro`       | Entrada e cadastro simulados                                                                      |
+| `/acessibilidade`            | Modos de cor (padrão, vermelho-verde, azul-amarelo, alto contraste), ícones grandes, toque duplo  |
+| `/perfil` e subpáginas       | Meus relatos, notificações, estações favoritas, bairros acompanhados e configurações              |
+| `/admin/login`, `/admin`     | Acesso administrativo e visão geral da fila                                                       |
+| `/admin/ocorrencias[/:id]`   | Fila priorizada com filtros e atualização de status                                               |
+| `/admin/avisos`              | Avisos oficiais para um município ou bairro                                                       |
+| `/admin/parametros`          | Limites do trânsito e dispositivos IoT (FIWARE)                                                   |
+| `/dev/design-system`         | Guia de estilo vivo                                                                               |
 
 Como usar alguns recursos:
 

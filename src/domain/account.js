@@ -67,7 +67,7 @@ export const NOTIFICATION_TOPICS = [
   {
     id: 'stateNews',
     label: 'Notícias e eventos do estado',
-    description: 'Conteúdo da aba Estado.',
+    description: 'Conteúdo da aba Explorar.',
   },
 ]
 

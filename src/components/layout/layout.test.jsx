@@ -16,7 +16,7 @@ function renderApp(path = '/inicio') {
             <Routes>
               <Route element={<AppShell />}>
                 <Route path="inicio" element={<p>Tela Início</p>} />
-                <Route path="estado" element={<p>Tela Estado</p>} />
+                <Route path="explorar" element={<p>Tela Explorar</p>} />
                 <Route path="mapa" element={<p>Tela Mapa</p>} />
                 <Route path="perfil" element={<p>Tela Perfil</p>} />
                 <Route path="relatar" element={<p>Tela Relatar</p>} />
@@ -31,19 +31,19 @@ function renderApp(path = '/inicio') {
 
 describe('AppShell + navegação', () => {
   it('tem landmarks, cinco itens na ordem pedida e a aba atual marcada', () => {
-    renderApp('/estado')
+    renderApp('/explorar')
     expect(screen.getByRole('banner')).toBeInTheDocument()
     expect(screen.getByRole('main')).toBeInTheDocument()
     const nav = screen.getByRole('navigation', { name: 'Navegação principal' })
     const links = within(nav).getAllByRole('link')
     expect(links.map((l) => l.textContent)).toEqual([
       'Início',
-      'Estado',
+      'Explorar',
       'Relatar',
       'Mapa',
       'Perfil',
     ])
-    expect(within(nav).getByRole('link', { name: 'Estado' })).toHaveAttribute(
+    expect(within(nav).getByRole('link', { name: 'Explorar' })).toHaveAttribute(
       'aria-current',
       'page',
     )
@@ -97,8 +97,8 @@ describe('foco ao trocar de tela', () => {
     const main = screen.getByRole('main')
     main.scrollTo = vi.fn()
     const nav = screen.getByRole('navigation', { name: 'Navegação principal' })
-    await user.click(within(nav).getByRole('link', { name: 'Estado' }))
-    expect(await screen.findByText('Tela Estado')).toBeInTheDocument()
+    await user.click(within(nav).getByRole('link', { name: 'Explorar' }))
+    expect(await screen.findByText('Tela Explorar')).toBeInTheDocument()
     expect(main).toHaveFocus()
     expect(main.scrollTo).toHaveBeenCalledWith({ top: 0 })
   })

@@ -36,14 +36,14 @@ const article = async (title) =>
 
 describe('Estado como visitante', () => {
   it('avisa que tudo é fictício, inclusive as instituições', async () => {
-    renderAt('/estado')
-    expect(await heading('Estado')).toBeInTheDocument()
+    renderAt('/explorar')
+    expect(await heading('Explorar')).toBeInTheDocument()
     expect(screen.getByText('Conteúdo de demonstração')).toBeInTheDocument()
     expect(screen.getByText(/inclusive as instituições/)).toBeInTheDocument()
   })
 
   it('"Tudo" mostra alertas, notícias e próximos eventos em seções', async () => {
-    renderAt('/estado')
+    renderAt('/explorar')
     expect(await heading('Alertas', 2)).toBeInTheDocument()
     expect(
       screen.getByRole('heading', { level: 2, name: 'Notícias' }),
@@ -54,7 +54,7 @@ describe('Estado como visitante', () => {
   })
 
   it('todo cartão é marcado como simulado e de instituição fictícia, nunca "verificada"', async () => {
-    renderAt('/estado')
+    renderAt('/explorar')
     const articles = await screen.findAllByRole('article')
     expect(articles.length).toBeGreaterThan(5)
     for (const a of articles) {
@@ -65,7 +65,7 @@ describe('Estado como visitante', () => {
   })
 
   it('o alerta estadual vem primeiro e mostra até quando vale', async () => {
-    renderAt('/estado')
+    renderAt('/explorar')
     const first = (await screen.findAllByRole('article'))[0]
     expect(first).toHaveTextContent('Previsão de chuva forte em várias regiões')
     expect(within(first).getByText('Atenção')).toBeInTheDocument()
@@ -74,7 +74,7 @@ describe('Estado como visitante', () => {
 
   it('os filtros por tipo mostram só aquele tipo', async () => {
     const user = userEvent.setup()
-    renderAt('/estado')
+    renderAt('/explorar')
     await screen.findAllByRole('article')
     await user.click(screen.getByRole('button', { name: 'Eventos' }))
     const articles = await screen.findAllByRole('article')
@@ -84,7 +84,7 @@ describe('Estado como visitante', () => {
 
   it('o filtro de eventos também mostra o que já aconteceu, identificado', async () => {
     const user = userEvent.setup()
-    renderAt('/estado')
+    renderAt('/explorar')
     await screen.findAllByRole('article')
     expect(screen.queryByText('Sessão de cinema ao ar livre')).not.toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Eventos' }))
@@ -93,14 +93,14 @@ describe('Estado como visitante', () => {
   })
 
   it('não oferece a escolha de região (não há municípios acompanhados)', async () => {
-    renderAt('/estado')
+    renderAt('/explorar')
     await screen.findAllByRole('article')
     expect(screen.queryByRole('group', { name: 'Região' })).not.toBeInTheDocument()
   })
 
   it('salvar um evento leva para Entrar', async () => {
     const user = userEvent.setup()
-    renderAt('/estado')
+    renderAt('/explorar')
     const card = await article('Feira de livros, trocas e leitura')
     await user.click(within(card).getByRole('button', { name: /Salvar/ }))
     expect(await heading('Entrar')).toBeInTheDocument()
@@ -108,7 +108,7 @@ describe('Estado como visitante', () => {
 
   it('"Salvos" explica que é preciso entrar', async () => {
     const user = userEvent.setup()
-    renderAt('/estado')
+    renderAt('/explorar')
     await screen.findAllByRole('article')
     await user.click(screen.getByRole('button', { name: 'Salvos' }))
     expect(await screen.findByText('Nenhum evento salvo')).toBeInTheDocument()
@@ -117,12 +117,12 @@ describe('Estado como visitante', () => {
 
   it('o relógio adiantado faz um alerta expirar: some de "Tudo" e vira "Encerrado"', async () => {
     const user = userEvent.setup()
-    const { unmount } = renderAt('/estado')
+    const { unmount } = renderAt('/explorar')
     await article('Previsão de chuva forte em várias regiões') // vale por mais ~30 h
     unmount()
 
     clock.advance(40 * 3_600_000)
-    renderAt('/estado')
+    renderAt('/explorar')
     await screen.findAllByRole('article')
     expect(
       screen.queryByText('Previsão de chuva forte em várias regiões'),
@@ -142,7 +142,7 @@ describe('Estado como morador', () => {
 
   it('salva um evento e o encontra em "Salvos"', async () => {
     const user = userEvent.setup()
-    renderAt('/estado')
+    renderAt('/explorar')
     const card = await article('Feira de livros, trocas e leitura')
     const button = within(card).getByRole('button', { name: /Salvar/ })
     expect(button).toHaveAttribute('aria-pressed', 'false')
@@ -163,7 +163,7 @@ describe('Estado como morador', () => {
 
   it('remove o evento dos salvos ao tocar de novo', async () => {
     const user = userEvent.setup()
-    renderAt('/estado')
+    renderAt('/explorar')
     const card = await article('Feira de livros, trocas e leitura')
     await user.click(within(card).getByRole('button', { name: /Salvar/ }))
     await user.click(await within(card).findByRole('button', { name: /Salvo/ }))
@@ -175,7 +175,7 @@ describe('Estado como morador', () => {
 
   it('"Salvos" mostra eventos de outros municípios mesmo com "Meus municípios" ligado', async () => {
     const user = userEvent.setup()
-    renderAt('/estado')
+    renderAt('/explorar')
     const card = await article('Feira de livros, trocas e leitura') // Campinas
     await user.click(within(card).getByRole('button', { name: /Salvar/ }))
     await within(card).findByRole('button', { name: /Salvo/ })
@@ -186,7 +186,7 @@ describe('Estado como morador', () => {
   })
 
   it('alertas e notícias de município ficam no Início, não no Estado', async () => {
-    renderAt('/estado')
+    renderAt('/explorar')
     await article('Previsão de chuva forte em várias regiões') // estadual
     expect(screen.queryByText('Maré alta no fim de semana')).not.toBeInTheDocument()
     expect(screen.queryByText('Tempo seco e baixa umidade')).not.toBeInTheDocument()
@@ -194,7 +194,7 @@ describe('Estado como morador', () => {
 
   it('"Meus municípios" filtra a agenda de eventos', async () => {
     const user = userEvent.setup()
-    renderAt('/estado')
+    renderAt('/explorar')
     await article('Feira de artesanato e gastronomia') // Campinas
     await user.click(screen.getByRole('button', { name: 'Meus municípios' }))
     await waitFor(() =>
@@ -211,16 +211,16 @@ describe('Estado como morador', () => {
 describe('Detalhe', () => {
   it('abre o detalhe pelo cartão e volta para o Estado', async () => {
     const user = userEvent.setup()
-    renderAt('/estado')
+    renderAt('/explorar')
     const card = await article('Previsão de chuva forte em várias regiões')
     await user.click(within(card).getByRole('button', { name: /Ver detalhes/ }))
     expect(await heading('Previsão de chuva forte em várias regiões')).toBeInTheDocument()
-    await user.click(screen.getByRole('link', { name: /Voltar ao estado/ }))
-    expect(await heading('Estado')).toBeInTheDocument()
+    await user.click(screen.getByRole('link', { name: /Voltar ao Explorar/ }))
+    expect(await heading('Explorar')).toBeInTheDocument()
   })
 
   it('notícia mostra o texto completo', async () => {
-    renderAt('/estado/seed-state-n1')
+    renderAt('/explorar/seed-state-n1')
     expect(
       await heading('Mutirão de limpeza de bueiros chega a mais cidades'),
     ).toBeInTheDocument()
@@ -228,7 +228,7 @@ describe('Detalhe', () => {
   })
 
   it('alerta não oferece agenda, mas pode ser compartilhado', async () => {
-    renderAt('/estado/seed-state-a1')
+    renderAt('/explorar/seed-state-a1')
     await heading('Previsão de chuva forte em várias regiões')
     expect(
       screen.queryByRole('button', { name: /Adicionar à agenda/ }),
@@ -247,7 +247,7 @@ describe('Detalhe', () => {
       .spyOn(HTMLAnchorElement.prototype, 'click')
       .mockImplementation(() => {})
     const user = userEvent.setup()
-    renderAt('/estado/seed-state-e1')
+    renderAt('/explorar/seed-state-e1')
     await heading('Feira de livros, trocas e leitura')
 
     await user.click(screen.getByRole('button', { name: /Adicionar à agenda/ }))
@@ -266,15 +266,26 @@ describe('Detalhe', () => {
 
   it('sem menu de compartilhar, copia o link', async () => {
     const user = userEvent.setup() // instala uma área de transferência de teste
-    renderAt('/estado/seed-state-n1')
+    renderAt('/explorar/seed-state-n1')
     await heading('Mutirão de limpeza de bueiros chega a mais cidades')
     await user.click(screen.getByRole('button', { name: /Compartilhar/ }))
     expect(await screen.findByText('Link copiado.')).toBeInTheDocument()
-    expect(await navigator.clipboard.readText()).toMatch(/\/estado\/seed-state-n1$/)
+    expect(await navigator.clipboard.readText()).toMatch(/\/explorar\/seed-state-n1$/)
   })
 
   it('id desconhecido mostra erro claro', async () => {
-    renderAt('/estado/nao-existe')
+    renderAt('/explorar/nao-existe')
     expect(await screen.findByText('Conteúdo não encontrado')).toBeInTheDocument()
+  })
+})
+
+describe('endereço antigo', () => {
+  it('/estado e /estado/:id levam para Explorar', async () => {
+    const first = renderAt('/estado')
+    expect(await heading('Explorar')).toBeInTheDocument()
+    first.unmount()
+    renderAt('/estado/seed-state-a1')
+    expect(await heading('Previsão de chuva forte em várias regiões')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Voltar ao Explorar/ })).toBeInTheDocument()
   })
 })

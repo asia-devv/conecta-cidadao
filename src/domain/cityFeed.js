@@ -3,7 +3,7 @@ import { alertState } from './stateFeed.js'
 
 /**
  * Regras do Início: só alertas e notícias dos municípios da pessoa.
- * (A aba Estado fica com o conteúdo estadual e a agenda de eventos.)
+ * (A aba Explorar fica com o conteúdo estadual e a agenda de eventos.)
  * Funções puras; `now` vem de fora.
  */
 
@@ -14,7 +14,7 @@ const newest = (a, b) => time(b.publishedAt) - time(a.publishedAt)
 /** Um aviso da moderação/administração vale no Início por 7 dias. */
 export const NOTICE_LIFETIME_HOURS = 7 * 24
 
-/** Itens da aba Estado: o que vale para o estado todo e a agenda de eventos. */
+/** Itens da aba Explorar: o que vale para o estado todo e a agenda de eventos. */
 export function isStateTabItem(item) {
   return item.cityId === null || item.kind === 'event'
 }
