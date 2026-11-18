@@ -56,7 +56,7 @@ O `.gitignore` já ignora `.env` e `.env.*`. Não versione chaves nem credenciai
 
 ## Banco de dados e serviços externos
 
-- **Sem banco de dados.** Contas, sessão, relatos, apoios, eventos salvos e preferências ficam no `localStorage` (chaves com o prefixo `nossa-rua:v2:`). As fotos dos relatos ficam no IndexedDB (banco `nossa-rua-images`). Tudo é **só deste navegador**: limpar os dados do site apaga tudo.
+- **Sem banco de dados.** Contas, sessão, relatos, apoios, eventos salvos e preferências ficam no `localStorage` (chaves com o prefixo `conecta-cidadao:v2:`; dados com o nome antigo, `nossa-rua:v2:`, são migrados ao abrir o app). As fotos dos relatos ficam no IndexedDB (banco `nossa-rua-images`, nome mantido para não perder fotos já salvas). Tudo é **só deste navegador**: limpar os dados do site apaga tudo.
 - **OpenStreetMap:** o mapa pede as imagens de fundo ao OpenStreetMap, que recebe o IP e a região vista. É o único acesso externo feito sem configuração.
 - **FIWARE (opcional):** veja [Sensores IoT](#sensores-iot-fiware--mqtt).
 
@@ -78,7 +78,7 @@ O proxy `/api/fiware` só existe em `npm run dev` e `npm run preview`. Um build 
 ### Contas de demonstração
 
 - **Morador(a):** na tela `/entrar`, botão "Entrar como morador(a)". Também é possível criar uma conta em `/cadastro` (nome, e-mail fictício e bairro; não há senha de cidadão).
-- **Administração:** em `/admin/login`, e-mail `admin@demo.nossarua.test` e senha `demo-admin` (os valores aparecem na própria tela).
+- **Administração:** em `/admin/login`, e-mail `admin@demo.conectacidadao.test` e senha `demo-admin` (os valores aparecem na própria tela).
 
 ## Scripts disponíveis
 

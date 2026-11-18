@@ -37,7 +37,7 @@ describe('AccessibilityContext', () => {
     again.unmount()
 
     window.localStorage.setItem(
-      'nossa-rua:v2:accessibility',
+      'conecta-cidadao:v2:accessibility',
       JSON.stringify({ colorMode: 'neon', largeIcons: 'sim' }),
     )
     const third = renderHook(() => useAccessibility(), { wrapper: AccessibilityProvider })

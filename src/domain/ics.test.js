@@ -71,9 +71,9 @@ describe('buildIcs', () => {
   })
 
   it('tem UID estável por evento', () => {
-    expect(ics).toContain('UID:seed-state-e1@nossa-rua.demo')
+    expect(ics).toContain('UID:seed-state-e1@conecta-cidadao.demo')
     expect(buildIcs(event, new Date('2027-01-01T00:00:00Z'))).toContain(
-      'UID:seed-state-e1@nossa-rua.demo',
+      'UID:seed-state-e1@conecta-cidadao.demo',
     )
   })
 

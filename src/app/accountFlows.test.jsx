@@ -283,13 +283,13 @@ describe('configurações', () => {
     expect(document.documentElement.dataset.colorMode).toBe('high-contrast')
     await user.click(screen.getByRole('button', { name: 'Grande' }))
     expect(document.documentElement.dataset.iconSize).toBe('large')
-    expect(JSON.parse(window.localStorage.getItem('nossa-rua:v2:accessibility'))).toEqual(
-      {
-        colorMode: 'high-contrast',
-        largeIcons: true,
-        guidedTap: false,
-      },
-    )
+    expect(
+      JSON.parse(window.localStorage.getItem('conecta-cidadao:v2:accessibility')),
+    ).toEqual({
+      colorMode: 'high-contrast',
+      largeIcons: true,
+      guidedTap: false,
+    })
   })
 
   it('toque duplo com narração: começa desligado, liga e lembra', async () => {
@@ -304,7 +304,7 @@ describe('configurações', () => {
     await user.click(on)
     expect(on).toHaveAttribute('aria-pressed', 'true')
     expect(
-      JSON.parse(window.localStorage.getItem('nossa-rua:v2:accessibility')),
+      JSON.parse(window.localStorage.getItem('conecta-cidadao:v2:accessibility')),
     ).toMatchObject({
       guidedTap: true,
     })
@@ -331,7 +331,7 @@ describe('configurações', () => {
       }),
     )
     expect(await heading('Entrar')).toBeInTheDocument()
-    expect(window.localStorage.getItem('nossa-rua:v2:session')).toBeNull()
+    expect(window.localStorage.getItem('conecta-cidadao:v2:session')).toBeNull()
   })
 
   it('baixar meus dados gera um arquivo JSON sem documento', async () => {

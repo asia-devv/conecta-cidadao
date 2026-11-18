@@ -11,6 +11,7 @@ import { ServiceError } from './ServiceError.js'
  *
  * Abre o banco a cada operação: é simples e suficiente para o protótipo.
  */
+// Nome mantido de quando o app se chamava "Nossa Rua": trocar apagaria as fotos já salvas.
 const DB_NAME = 'nossa-rua-images'
 const STORE = 'images'
 

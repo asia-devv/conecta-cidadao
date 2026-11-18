@@ -186,11 +186,13 @@ describe('excluir a conta apaga o que ela publicou', () => {
       by: 'admin',
       simulated: false,
     })
-    expect(window.localStorage.getItem('nossa-rua:v2:admin-events')).toContain(created.id)
+    expect(window.localStorage.getItem('conecta-cidadao:v2:admin-events')).toContain(
+      created.id,
+    )
 
     await accounts.deleteAccount(resident.id)
 
-    expect(window.localStorage.getItem('nossa-rua:v2:admin-events')).not.toContain(
+    expect(window.localStorage.getItem('conecta-cidadao:v2:admin-events')).not.toContain(
       created.id,
     )
   })
