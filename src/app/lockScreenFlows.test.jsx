@@ -31,6 +31,8 @@ beforeEach(() => clock.reset())
 
 const notification = () =>
   screen.findByRole('link', { name: /Alerta de tempestade na sua região/ })
+const railNotification = () =>
+  screen.findByRole('link', { name: /Alerta no metrô e trem/ })
 
 describe('Tela de bloqueio (simulação)', () => {
   it('mostra hora, data e a notificação do app, sem o menu do app', async () => {
@@ -83,6 +85,38 @@ describe('Tela de bloqueio (simulação)', () => {
         name: 'Abrigos e pontos de apoio mais próximos de Barão Geraldo',
       }),
     ).toBeInTheDocument()
+  })
+
+  it('mostra também a linha travada e, ao tocar, o mapa com rotas alternativas', async () => {
+    const user = userEvent.setup()
+    renderAt('/tela-de-bloqueio')
+    const link = await railNotification()
+    expect(link).toHaveTextContent('Linha 9-Esmeralda travada entre Osasco e Pinheiros')
+    expect(link).toHaveTextContent(/rotas alternativas/)
+    // as duas notificações, a da linha primeiro
+    const links = within(
+      screen.getByRole('region', { name: 'Notificações' }),
+    ).getAllByRole('link')
+    expect(links).toHaveLength(2)
+    expect(links[0]).toBe(link)
+
+    await user.click(link)
+    expect(
+      await screen.findByRole('heading', { name: 'Rotas alternativas' }),
+    ).toBeInTheDocument()
+    expect(screen.getByText(/Trecho afetado:/)).toHaveTextContent('Linha 9-Esmeralda')
+    expect(
+      within(screen.getByRole('navigation')).getByRole('link', { name: 'Mapa' }),
+    ).toHaveAttribute('aria-current', 'page')
+  })
+
+  it('com estação favorita, avisa da linha que a pessoa usa', async () => {
+    const resident = await accounts.signInDemo('resident')
+    await accounts.updateAccount(resident.id, { favoriteStations: ['bras'] })
+    renderAt('/tela-de-bloqueio')
+    expect(await railNotification()).toHaveTextContent(
+      'Linha 3-Vermelha com velocidade reduzida entre Sé e Brás',
+    )
   })
 
   it('a tela de notificações do perfil leva à simulação', async () => {

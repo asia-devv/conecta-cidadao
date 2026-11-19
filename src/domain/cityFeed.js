@@ -96,3 +96,23 @@ export function stormAlertFor(items, { cityId, now }) {
     (alertState(a, now) === 'active' ? 0 : 1)
   return [...storms].sort((a, b) => rank(a) - rank(b) || newest(a, b))[0] ?? null
 }
+
+/**
+ * Alerta de linha de metrô/trem para a notificação da tela de bloqueio: prefere
+ * uma linha que a pessoa usa (com estação favorita), depois um alerta ativo,
+ * depois o urgente e o mais novo. Sem nenhum, devolve null.
+ */
+export function railAlertFor(items, { now, favoriteLineIds = [] }) {
+  const alerts = items
+    .filter((i) => i.kind === 'alert' && i.target?.type === 'rail')
+    .filter((i) => time(i.publishedAt) <= now.getTime())
+  const rank = (a) =>
+    (favoriteLineIds.includes(a.target.lineId) ? 0 : 2) +
+    (alertState(a, now) === 'active' ? 0 : 1)
+  const urgency = (a) => (a.level === 'urgent' ? 0 : 1)
+  return (
+    [...alerts].sort(
+      (a, b) => rank(a) - rank(b) || urgency(a) - urgency(b) || newest(a, b),
+    )[0] ?? null
+  )
+}
