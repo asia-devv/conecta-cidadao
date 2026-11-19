@@ -6,9 +6,9 @@ import { RAIL_LINES, RAIL_STATIONS } from '../../data/railNetwork.js'
 import MapView from './MapView.jsx'
 
 // Teste de fumaça do desenho: o jsdom não tem layout nem tiles, mas monta o SVG e os marcadores.
-async function renderMap(props = {}) {
+async function renderMap({ transform = (s) => s, ...props } = {}) {
   goToLocalHour(12)
-  const snapshot = await getMobilitySnapshot('sao-paulo')
+  const snapshot = transform(await getMobilitySnapshot('sao-paulo'))
   const view = render(
     <MapView snapshot={snapshot} mode="traffic" onSelectSegment={() => {}} {...props} />,
   )
@@ -18,7 +18,7 @@ async function renderMap(props = {}) {
 describe('MapView', () => {
   it('é uma região nomeada que aponta para as listas', async () => {
     const { getByRole } = await renderMap()
-    expect(getByRole('region', { name: /Mapa esquemático/ })).toBeInTheDocument()
+    expect(getByRole('region', { name: /Mapa de mobilidade/ })).toBeInTheDocument()
   })
 
   it('no modo trânsito desenha um traço por trecho, com a classe do nível', async () => {
@@ -30,12 +30,46 @@ describe('MapView', () => {
     }
   })
 
-  it('o trecho destacado ganha um contorno extra', async () => {
-    const { container, snapshot } = await renderMap({ selectedSegmentId: 'sao-paulo-s1' })
-    expect(container.querySelectorAll('path.nr-halo')).toHaveLength(1)
+  it('cada via tem halo translúcido e linha principal, seguindo o traçado da rua', async () => {
+    const { container, snapshot } = await renderMap({
+      selectedSegmentId: 'sp-av-paulista',
+    })
+    expect(container.querySelectorAll('path.nr-road-halo')).toHaveLength(
+      snapshot.segments.length,
+    )
     expect(container.querySelectorAll('path.leaflet-interactive')).toHaveLength(
       snapshot.segments.length,
     )
+    // sem sensor: tudo cinza e sem marcador de estação de medição
+    expect(container.querySelectorAll('path.nr-line-unknown').length).toBe(
+      snapshot.segments.length * 2,
+    )
+    expect(container.querySelectorAll('.nr-sensor')).toHaveLength(0)
+  })
+
+  it('via com sensor ganha a cor da média e o marcador da estação de medição', async () => {
+    const { container } = await renderMap({
+      transform: (snapshot) => ({
+        ...snapshot,
+        segments: snapshot.segments.map((s) =>
+          s.id === 'sp-marginal-tiete'
+            ? {
+                ...s,
+                reading: {
+                  status: 'ok',
+                  level: 'heavy',
+                  speedKmh: 18,
+                  percent: 30,
+                  source: 'iot',
+                  sensorId: '003',
+                },
+              }
+            : s,
+        ),
+      }),
+    })
+    expect(container.querySelectorAll('path.nr-line-heavy')).toHaveLength(2)
+    expect(container.querySelectorAll('.nr-sensor')).toHaveLength(1)
   })
 
   it('clicar em um trecho avisa qual foi', async () => {
@@ -44,9 +78,7 @@ describe('MapView', () => {
     container
       .querySelector('path.leaflet-interactive')
       .dispatchEvent(new MouseEvent('click', { bubbles: true }))
-    expect(onSelectSegment).toHaveBeenCalledWith(
-      expect.stringMatching(/^sao-paulo-s\d+$/),
-    )
+    expect(onSelectSegment).toHaveBeenCalledWith(expect.stringMatching(/^sp-/))
   })
 
   it('no modo ônibus desenha as linhas e os ônibus numerados, sem foco de teclado', async () => {

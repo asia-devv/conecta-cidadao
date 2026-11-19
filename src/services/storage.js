@@ -1,7 +1,7 @@
 /**
  * Acesso ao localStorage, num só lugar.
  *
- * - Todas as chaves levam o prefixo "nossa-rua:v2:", então dá para apagar só o
+ * - Todas as chaves levam o prefixo "conecta-cidadao:v2:", então dá para apagar só o
  *   que é do app e trocar de versão sem colidir com dados antigos.
  * - localStorage pode lançar erro (navegação privativa, cota cheia, bloqueio) ou
  *   conter lixo. Por isso toda leitura e escrita é protegida: nesses casos o app
@@ -9,9 +9,11 @@
  */
 import { ServiceError } from './ServiceError.js'
 
-const PREFIX = 'nossa-rua:v2:'
+const PREFIX = 'conecta-cidadao:v2:'
 // Formato anterior (com contas de comércio e anúncios): é apagado ao abrir o app.
 const LEGACY_PREFIXES = ['nossa-rua:v1:']
+// Mesmo formato, com o nome antigo do app ("Nossa Rua"): é copiado para o prefixo novo.
+const RENAMED_PREFIX = 'nossa-rua:v2:'
 
 export const storage = {
   read(key, fallback = null) {
@@ -56,9 +58,18 @@ export const storage = {
   /** Remove dados de versões antigas do app, que esta versão não lê mais. */
   removeLegacy() {
     try {
-      Object.keys(window.localStorage)
+      const keys = Object.keys(window.localStorage)
+      keys
         .filter((k) => LEGACY_PREFIXES.some((prefix) => k.startsWith(prefix)))
         .forEach((k) => window.localStorage.removeItem(k))
+      // o app trocou de nome: leva os dados para o prefixo novo sem perder nada
+      for (const key of keys.filter((k) => k.startsWith(RENAMED_PREFIX))) {
+        const target = PREFIX + key.slice(RENAMED_PREFIX.length)
+        if (window.localStorage.getItem(target) === null) {
+          window.localStorage.setItem(target, window.localStorage.getItem(key))
+        }
+        window.localStorage.removeItem(key)
+      }
     } catch {
       // sem armazenamento, não há o que limpar
     }

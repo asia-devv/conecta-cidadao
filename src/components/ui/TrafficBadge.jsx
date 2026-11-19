@@ -10,7 +10,7 @@ const LEVELS = {
   free: { label: 'Trânsito livre', icon: CircleCheck, tone: 'ok' },
   moderate: { label: 'Trânsito moderado', icon: TriangleAlert, tone: 'warn' },
   heavy: { label: 'Congestionamento intenso', icon: OctagonAlert, tone: 'danger' },
-  unknown: { label: 'Sem leitura do sensor', icon: WifiOff, tone: 'neutral' },
+  unknown: { label: 'Sem dados', icon: WifiOff, tone: 'neutral' },
 }
 
 export function TrafficBadge({ level, className = '' }) {

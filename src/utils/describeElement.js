@@ -83,7 +83,7 @@ function stateOf(el, kind) {
 }
 
 /**
- * Frase para narrar: "Estado, link, atual." Campos de texto só dizem o nome e o tipo.
+ * Frase para narrar: "Explorar, link, atual." Campos de texto só dizem o nome e o tipo.
  * Devolve `null` se o elemento não é algo que o modo guiado trate.
  */
 export function describeElement(el) {

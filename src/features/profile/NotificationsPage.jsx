@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Page } from '../../components/layout/Page.jsx'
 import { CheckboxField } from '../../components/ui/FormFields.jsx'
 import { Notice } from '../../components/ui/Notice.jsx'
@@ -37,6 +38,12 @@ export function NotificationsPage() {
         <p>
           Suas escolhas ficam salvas, mas este protótipo ainda não envia avisos para o
           celular. Quando enviar, vai seguir exatamente o que está marcado aqui.
+        </p>
+        <p>
+          <Link to="/tela-de-bloqueio" className="font-bold text-primary underline">
+            Ver como chega uma notificação
+          </Link>{' '}
+          (simulação de um alerta de tempestade na tela de bloqueio).
         </p>
       </Notice>
 

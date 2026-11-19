@@ -70,7 +70,7 @@ export function buildIcs(event, now) {
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
     'BEGIN:VEVENT',
-    `UID:${event.id}@nossa-rua.demo`,
+    `UID:${event.id}@conecta-cidadao.demo`,
     `DTSTAMP:${toUtc(now.toISOString())}`,
     `DTSTART:${toUtc(event.startsAt)}`,
     `DTEND:${toUtc(event.endsAt)}`,

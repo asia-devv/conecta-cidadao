@@ -14,8 +14,8 @@ import { getMobilitySnapshot } from './mobilityService.js'
 
 const SERVER = '10.0.0.5'
 const road = {
-  segmentId: 'sao-paulo-s1',
-  roadName: 'Ligação Pinheiros–Centro',
+  segmentId: 'sp-av-paulista',
+  roadName: 'Av. Paulista',
   maxSpeed: 50,
 }
 
@@ -62,7 +62,7 @@ describe('sensores de velocidade média', () => {
     expect(sensor).toMatchObject({
       averageSpeed: 17.5,
       maxSpeed: 50,
-      segmentId: 'sao-paulo-s1',
+      segmentId: 'sp-av-paulista',
     })
 
     await removeTrafficSensor(SERVER, '001')
@@ -91,10 +91,10 @@ describe('mapa com sensor IoT', () => {
     const fake = installFakeFiware()
     saveFiwareServer(SERVER)
     await provisionTrafficSensor(SERVER, '001', road)
-    fake.measure('traffic001', 12, clock.now())
+    fake.measure('traffic001', 12)
 
     const snapshot = await getMobilitySnapshot('sao-paulo')
-    const segment = snapshot.segments.find((s) => s.id === 'sao-paulo-s1')
+    const segment = snapshot.segments.find((s) => s.id === 'sp-av-paulista')
     expect(segment.reading).toMatchObject({
       source: 'iot',
       sensorId: '001',
@@ -104,17 +104,44 @@ describe('mapa com sensor IoT', () => {
       level: 'heavy',
     })
     expect(snapshot.iot).toEqual({ status: 'connected', count: 1 })
-    // as outras vias continuam simuladas
+    // vias sem sensor: sem dados (cinza), nada simulado
     expect(
-      snapshot.segments.find((s) => s.id === 'sao-paulo-s2').reading.source,
-    ).toBeUndefined()
+      snapshot.segments.find((s) => s.id === 'sp-av-reboucas').reading,
+    ).toMatchObject({
+      status: 'no_data',
+      level: 'unknown',
+    })
   })
 
-  it('FIWARE fora do ar: o mapa segue com a simulação e avisa', async () => {
+  it('lê o sensor do smart-traffic (Traffic:003, speed_kmh) na Marginal Tietê', async () => {
+    const fake = installFakeFiware()
+    saveFiwareServer(SERVER)
+    fake.entities.set('urn:ngsi-ld:Traffic:003', {
+      id: 'urn:ngsi-ld:Traffic:003',
+      type: 'Traffic',
+      speed_kmh: 18,
+      vehicle_count: 7,
+      s: 'ON',
+      TimeInstant: new Date().toISOString(),
+    })
+    const snapshot = await getMobilitySnapshot('sao-paulo')
+    const marginal = snapshot.segments.find((s) => s.id === 'sp-marginal-tiete')
+    // 18 km/h numa via de 60 km/h = 30% da máxima: congestionada
+    expect(marginal.reading).toMatchObject({
+      source: 'iot',
+      sensorId: '003',
+      speedKmh: 18,
+      percent: 30,
+      level: 'heavy',
+      vehicleCount: 7,
+    })
+  })
+
+  it('FIWARE fora do ar: as vias ficam sem dados e a tela avisa', async () => {
     installFakeFiware({ online: false })
     saveFiwareServer(SERVER)
     const snapshot = await getMobilitySnapshot('sao-paulo')
     expect(snapshot.iot.status).toBe('error')
-    expect(snapshot.segments.every((s) => s.reading.source === undefined)).toBe(true)
+    expect(snapshot.segments.every((s) => s.reading.status === 'no_data')).toBe(true)
   })
 })

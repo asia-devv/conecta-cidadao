@@ -8,23 +8,47 @@ import { formatClock } from '../../utils/format.js'
 function summarize(segments) {
   const count = (level) => segments.filter((s) => s.reading.level === level).length
   const parts = [
-    [count('heavy'), 'com congestionamento intenso'],
-    [count('moderate'), 'com trânsito moderado'],
-    [count('free'), 'livres'],
-    [count('unknown'), 'sem leitura'],
+    [count('heavy'), 'congestionada', 'congestionadas'],
+    [count('moderate'), 'com trânsito moderado', 'com trânsito moderado'],
+    [count('free'), 'livre', 'livres'],
+    [count('unknown'), 'sem dados', 'sem dados'],
   ]
     .filter(([n]) => n > 0)
-    .map(([n, text]) => `${n} ${n === 1 ? 'trecho' : 'trechos'} ${text}`)
+    .map(([n, one, many]) => `${n} ${n === 1 ? `via ${one}` : `vias ${many}`}`)
   return parts.join(', ')
 }
 
-/** Lista de trechos, do mais grave ao mais leve. É a versão completa do que o mapa mostra. */
+/** O que dizer sobre a velocidade da via, conforme a leitura. */
+function speedText(segment) {
+  const { reading } = segment
+  if (reading.status === 'ok') {
+    const average = `${reading.speedKmh.toFixed(1).replace('.', ',')} km/h`
+    return `Média de ${average} numa via de ${segment.freeFlowKmh} km/h (${reading.percent}% da máxima)`
+  }
+  if (reading.status === 'offline') return 'O sensor IoT está sem leitura recente.'
+  return 'Sem sensor com dados nesta via agora.'
+}
+
+/**
+ * Lista das vias monitoradas, da mais grave à mais leve. É a versão completa do
+ * que o mapa mostra (velocidade, situação e de onde veio o dado).
+ */
 export function TrafficPanel({
   segments,
+  cityName,
   thresholds = DEFAULT_THRESHOLDS,
   selectedId,
   onSelect,
 }) {
+  if (segments.length === 0) {
+    return (
+      <p className="text-ink">
+        Ainda não há vias monitoradas em {cityName ?? 'este município'}. Os sensores IoT
+        desta versão estão em São Paulo.
+      </p>
+    )
+  }
+
   const sorted = segments
     .map((segment) => ({ ...segment, level: segment.reading.level }))
     .sort(compareBySeverity)
@@ -35,7 +59,7 @@ export function TrafficPanel({
         {summarize(segments)}.
       </p>
 
-      <h2 className="sr-only">Trechos monitorados</h2>
+      <h2 className="sr-only">Vias monitoradas</h2>
       <ul className="flex flex-col gap-3">
         {sorted.map((segment) => {
           const { reading } = segment
@@ -57,34 +81,28 @@ export function TrafficPanel({
                   </h3>
                   <TrafficBadge level={segment.level} />
                 </div>
+                {segment.stretch && (
+                  <p className="text-sm text-ink-muted">{segment.stretch}</p>
+                )}
                 <p className="mt-2 flex items-center gap-2 text-ink">
                   <Icon icon={Gauge} />
-                  {reading.status === 'ok'
-                    ? reading.source === 'iot'
-                      ? `Média de ${reading.speedKmh} km/h numa via de ${segment.freeFlowKmh} km/h (${reading.percent}% da máxima)`
-                      : `${reading.speedKmh} km/h (${reading.percent}% dos ${segment.freeFlowKmh} km/h normais)`
-                    : reading.source === 'iot'
-                      ? 'O sensor IoT está sem leitura recente.'
-                      : 'O sensor está sem sinal; não dá para estimar a velocidade agora.'}
+                  {speedText(segment)}
                 </p>
-                <p className="mt-1 flex flex-wrap items-center gap-1.5 text-sm text-ink-muted">
-                  {reading.source === 'iot' ? (
-                    <>
-                      <Badge tone="info" icon={Radio}>
-                        Sensor IoT {reading.sensorId}
-                      </Badge>
-                      {reading.status === 'ok'
-                        ? 'Leitura recebida pelo FIWARE'
-                        : 'Último dado'}{' '}
-                      às {formatClock(reading.updatedAt)}
-                    </>
-                  ) : (
-                    <>
-                      {reading.status === 'ok' ? 'Leitura' : 'Último sinal'} simulada às{' '}
-                      {formatClock(reading.updatedAt)}
-                    </>
-                  )}
-                </p>
+                {reading.source === 'iot' && (
+                  <p className="mt-1 flex flex-wrap items-center gap-1.5 text-sm text-ink-muted">
+                    <Badge tone="info" icon={Radio}>
+                      Sensor IoT {reading.sensorId}
+                    </Badge>
+                    {reading.samples
+                      ? `${reading.samples} ${reading.samples === 1 ? 'medição' : 'medições'} nos últimos 30 s`
+                      : 'Leitura recebida pelo FIWARE'}
+                    {reading.latestKmh != null &&
+                      ` · agora ${reading.latestKmh.toFixed(1).replace('.', ',')} km/h`}
+                    {reading.vehicleCount != null &&
+                      ` · ${reading.vehicleCount} veículos`}
+                    {reading.updatedAt && ` · ${formatClock(reading.updatedAt)}`}
+                  </p>
+                )}
                 {onSelect && (
                   <button
                     type="button"
@@ -109,7 +127,9 @@ export function TrafficPanel({
           Como classificamos
         </h3>
         <p className="mt-1 text-sm text-ink-muted">
-          Comparamos a velocidade lida com a velocidade normal do trecho.
+          Comparamos a velocidade média dos últimos 30 segundos, enviada pelo sensor IoT,
+          com a velocidade máxima da via. Sem sensor ou sem leitura recente, a via fica
+          cinza.
         </p>
         <ul className="mt-2 flex flex-col gap-2 text-sm text-ink">
           <li className="flex flex-wrap items-center gap-2">

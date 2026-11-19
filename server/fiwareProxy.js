@@ -128,7 +128,7 @@ export function fiwareProxyPlugin() {
     })
   }
   return {
-    name: 'nossa-rua-fiware-proxy',
+    name: 'conecta-cidadao-fiware-proxy',
     configureServer: mount,
     configurePreviewServer: mount,
   }

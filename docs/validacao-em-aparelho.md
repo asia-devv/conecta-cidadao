@@ -9,7 +9,7 @@ Preparação: abrir o endereço do app no celular, entrar como morador(a) de dem
 | #   | O que fazer                                      | O que esperar                                                                           | Resultado |
 | --- | ------------------------------------------------ | --------------------------------------------------------------------------------------- | --------- |
 | 1.1 | Percorrer o Início deslizando para a direita     | Cada publicação é lida com tipo, título, bairro, tempo e status; nenhum item "sem nome" |           |
-| 1.2 | Trocar de aba (Início → Estado → Mapa)           | O leitor passa a ler o conteúdo novo, não a aba antiga; o título da tela é anunciado    |           |
+| 1.2 | Trocar de aba (Início → Explorar → Mapa)         | O leitor passa a ler o conteúdo novo, não a aba antiga; o título da tela é anunciado    |           |
 | 1.3 | Apoiar um relato                                 | Estado do botão (apoiado / não apoiado) é lido; mensagem de confirmação é anunciada     |           |
 | 1.4 | Relatar um problema, com um campo inválido       | O erro é lido junto ao campo; o foco não se perde                                       |           |
 | 1.5 | Abrir o histórico de um relato                   | A linha do tempo é lida em ordem, com o selo "simulado" onde houver                     |           |
@@ -18,15 +18,15 @@ Preparação: abrir o endereço do app no celular, entrar como morador(a) de dem
 
 ## 2. Modo de toque duplo
 
-| #   | O que fazer                                          | O que esperar                                                                    | Resultado |
-| --- | ---------------------------------------------------- | -------------------------------------------------------------------------------- | --------- |
-| 2.1 | Ligar em Acessibilidade e tocar uma vez em "Estado"  | Voz diz "Estado, link. Toque de novo para abrir."; item destacado; tela não muda |           |
-| 2.2 | Tocar de novo no mesmo item                          | Abre a tela                                                                      |           |
-| 2.3 | Tocar uma vez, esperar ~5 s, tocar de novo           | Volta a ser "primeiro toque"                                                     |           |
-| 2.4 | Tocar num campo de texto e digitar                   | Fala o nome do campo; o teclado abre e dá para escrever                          |           |
-| 2.5 | Com VoiceOver/TalkBack **ligado junto**              | Os dois não brigam (o leitor de tela ativa direto); se atrapalhar, anotar        |           |
-| 2.6 | Desligar o modo                                      | Toque duas vezes em "Desligado"; instrução da tela é suficiente?                 |           |
-| 2.7 | A voz em português está clara e na velocidade certa? | Anotar o aparelho e a voz usada                                                  |           |
+| #   | O que fazer                                           | O que esperar                                                                      | Resultado |
+| --- | ----------------------------------------------------- | ---------------------------------------------------------------------------------- | --------- |
+| 2.1 | Ligar em Acessibilidade e tocar uma vez em "Explorar" | Voz diz "Explorar, link. Toque de novo para abrir."; item destacado; tela não muda |           |
+| 2.2 | Tocar de novo no mesmo item                           | Abre a tela                                                                        |           |
+| 2.3 | Tocar uma vez, esperar ~5 s, tocar de novo            | Volta a ser "primeiro toque"                                                       |           |
+| 2.4 | Tocar num campo de texto e digitar                    | Fala o nome do campo; o teclado abre e dá para escrever                            |           |
+| 2.5 | Com VoiceOver/TalkBack **ligado junto**               | Os dois não brigam (o leitor de tela ativa direto); se atrapalhar, anotar          |           |
+| 2.6 | Desligar o modo                                       | Toque duas vezes em "Desligado"; instrução da tela é suficiente?                   |           |
+| 2.7 | A voz em português está clara e na velocidade certa?  | Anotar o aparelho e a voz usada                                                    |           |
 
 Pergunta para quem usa: o destaque (contorno grosso) e a frase falada bastam, ou falta algo (vibração, repetir a última frase)?
 

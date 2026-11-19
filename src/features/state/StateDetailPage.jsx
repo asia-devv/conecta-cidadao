@@ -27,7 +27,7 @@ const SHARE_MESSAGES = {
 export function StateDetailPage() {
   const { id } = useParams()
   const fromHome = useLocation().pathname.startsWith('/inicio')
-  const base = fromHome ? '/inicio' : '/estado'
+  const base = fromHome ? '/inicio' : '/explorar'
   const navigate = useNavigate()
   const { account } = useSession()
   const { now, offsetMs } = useClock()
@@ -42,7 +42,7 @@ export function StateDetailPage() {
   })
   const item = query.data
 
-  useDocumentTitle(item?.title ?? 'Estado')
+  useDocumentTitle(item?.title ?? 'Explorar')
 
   async function handleShare() {
     const result = await shareLink({
@@ -63,7 +63,9 @@ export function StateDetailPage() {
 
   return (
     <div className="flex flex-col gap-5 px-4 pt-3 pb-8">
-      <BackLink to={base}>{fromHome ? 'Voltar ao início' : 'Voltar ao estado'}</BackLink>
+      <BackLink to={base}>
+        {fromHome ? 'Voltar ao início' : 'Voltar ao Explorar'}
+      </BackLink>
 
       {query.isPending && (
         <div aria-busy="true" className="flex flex-col gap-3">

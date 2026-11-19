@@ -20,7 +20,7 @@ function SafePlaces({ places, selectedId, onSelect, placeName }) {
   return (
     <section aria-labelledby="safe-title" className="flex flex-col gap-2">
       <h3 id="safe-title" className="font-display font-bold">
-        Pontos de apoio mais próximos de {placeName}
+        Abrigos e pontos de apoio mais próximos de {placeName}
       </h3>
       <ol className="flex flex-col gap-2">
         {places.map((place, index) => {

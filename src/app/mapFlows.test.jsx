@@ -2,13 +2,14 @@ import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter } from 'react-router-dom'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { AccessibilityProvider } from '../context/AccessibilityContext.jsx'
 import { ClockProvider } from '../context/ClockContext.jsx'
 import { SessionProvider } from '../context/SessionContext.jsx'
-import * as accounts from '../services/accountService.js'
 import { clock } from '../services/clock.js'
+import { saveFiwareServer } from '../services/fiwareService.js'
 import { goToLocalHour } from '../test/clockHelpers.js'
+import { installFakeFiware } from '../test/fakeFiware.js'
 import { AppRoutes } from './App.jsx'
 import { createQueryClient } from './queryClient.js'
 
@@ -33,19 +34,20 @@ beforeEach(() => clock.reset())
 const segmentCards = () => screen.findAllByRole('article')
 
 describe('Mapa: trânsito', () => {
-  it('avisa que os dados são simulados e esquemáticos', async () => {
+  afterEach(() => vi.unstubAllGlobals())
+
+  it('explica de onde vêm os dados de cada camada', async () => {
     renderAt('/mapa')
     expect(
-      await screen.findByText(/Trânsito e ônibus são simulados e esquemáticos/),
+      await screen.findByText(/vias reais, coloridas pelos sensores IoT/),
     ).toBeInTheDocument()
     expect(screen.getByText(/Estações de metrô e trem são reais/)).toBeInTheDocument()
   })
 
-  it('abre em São Paulo, em "Trânsito", com resumo e trechos marcados como simulados', async () => {
-    goToLocalHour(12)
+  it('abre em São Paulo com as vias monitoradas; sem FIWARE, todas sem dados', async () => {
     renderAt('/mapa')
     const cards = await segmentCards()
-    expect(cards.length).toBe(10)
+    expect(cards.length).toBe(14)
     expect(screen.getByRole('button', { name: 'São Paulo' })).toHaveAttribute(
       'aria-pressed',
       'true',
@@ -54,65 +56,59 @@ describe('Mapa: trânsito', () => {
       'aria-pressed',
       'true',
     )
-    expect(screen.getByText(/Atualizado às/)).toBeInTheDocument()
+    expect(within(cards[0]).getByRole('heading')).toHaveTextContent('Marginal Tietê')
     for (const card of cards) {
-      expect(within(card).getByText(/simulada às/)).toBeInTheDocument()
+      expect(within(card).getByText('Sem dados')).toBeInTheDocument()
     }
-    expect(screen.getByText(/\d+ trechos? /)).toBeInTheDocument()
+    expect(screen.getByText('14 vias sem dados.')).toBeInTheDocument()
+    expect(screen.getByText('Nenhum servidor FIWARE configurado')).toBeInTheDocument()
   })
 
-  it('no pico da manhã há congestionamento intenso, e o trecho mais grave vem primeiro', async () => {
-    goToLocalHour(8)
+  it('com o sensor do smart-traffic, a Marginal Tietê ganha cor pela média de 30 s', async () => {
+    const fake = installFakeFiware()
+    saveFiwareServer('10.0.0.5')
+    fake.entities.set('urn:ngsi-ld:Traffic:003', {
+      id: 'urn:ngsi-ld:Traffic:003',
+      type: 'Traffic',
+      speed_kmh: 18,
+      vehicle_count: 4,
+      TimeInstant: new Date().toISOString(),
+    })
     renderAt('/mapa')
-    const [first] = await segmentCards()
-    expect(within(first).getByText('Congestionamento intenso')).toBeInTheDocument()
+    const marginal = await screen.findByRole('article', { name: 'Marginal Tietê' })
+    expect(
+      await within(marginal).findByText('Congestionamento intenso'),
+    ).toBeInTheDocument()
+    expect(
+      within(marginal).getByText(/Média de 18,0 km\/h numa via de 60 km\/h/),
+    ).toBeInTheDocument()
+    expect(within(marginal).getByText('Sensor IoT 003')).toBeInTheDocument()
+    expect(await screen.findByText(/1 via com sensor IoT \(FIWARE\)/)).toBeInTheDocument()
+    // as outras vias continuam cinza: nada é inventado
+    expect(
+      within(screen.getByRole('article', { name: 'Av. Paulista' })).getByText(
+        'Sem dados',
+      ),
+    ).toBeInTheDocument()
   })
 
-  it('de madrugada o trânsito está livre', async () => {
-    goToLocalHour(3)
-    renderAt('/mapa')
-    for (const card of await segmentCards()) {
-      // (a legenda também cita o nível, por isso a busca é dentro de cada trecho)
-      expect(within(card).queryByText('Congestionamento intenso')).not.toBeInTheDocument()
-    }
-  })
-
-  it('o nível sempre aparece em texto, não só em cor', async () => {
-    goToLocalHour(8)
-    renderAt('/mapa')
-    for (const card of await segmentCards()) {
-      expect(
-        within(card).getByText(
-          /Trânsito livre|Trânsito moderado|Congestionamento intenso|Sem leitura do sensor/,
-        ),
-      ).toBeInTheDocument()
-    }
-  })
-
-  it('explica a classificação com os limites de 75% e 40%', async () => {
+  it('explica a classificação com os limites de 75% e 40% da velocidade máxima', async () => {
     renderAt('/mapa')
     await segmentCards()
     const legend = screen.getByRole('region', { name: 'Como classificamos' })
+    expect(within(legend).getByText(/velocidade máxima da via/)).toBeInTheDocument()
     expect(within(legend).getByText(/a partir de 75%/)).toBeInTheDocument()
-    expect(within(legend).getByText(/de 40% a 74%/)).toBeInTheDocument()
     expect(within(legend).getByText(/abaixo de 40%/)).toBeInTheDocument()
   })
 
-  it('troca de município e mostra os trechos de lá', async () => {
+  it('município sem vias monitoradas diz isso em vez de desenhar linhas', async () => {
     const user = userEvent.setup()
     renderAt('/mapa')
     await segmentCards()
-    expect(screen.getByText('Ligação Pinheiros–Centro')).toBeInTheDocument()
-
     await user.click(screen.getByRole('button', { name: 'Santos' }))
-    expect(await screen.findByText('Ligação Gonzaga–Ponta da Praia')).toBeInTheDocument()
-    expect(screen.queryByText('Ligação Pinheiros–Centro')).not.toBeInTheDocument()
-  })
-
-  it('moradores de um município com dados já abrem nele', async () => {
-    await accounts.signInDemo('resident') // acompanha Pinheiros, em São Paulo
-    renderAt('/mapa')
-    expect(await screen.findByText('Ligação Pinheiros–Centro')).toBeInTheDocument()
+    expect(
+      await screen.findByText(/Ainda não há vias monitoradas em Santos/),
+    ).toBeInTheDocument()
   })
 })
 

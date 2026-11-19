@@ -1,10 +1,10 @@
 import { NavLink } from 'react-router-dom'
-import { CircleUserRound, House, Landmark, Map, Plus } from 'lucide-react'
+import { CircleUserRound, House, Map, Plus, Search } from 'lucide-react'
 import { Icon } from '../ui/Icon.jsx'
 
 const TABS = [
   { to: '/inicio', label: 'Início', icon: House },
-  { to: '/estado', label: 'Estado', icon: Landmark },
+  { to: '/explorar', label: 'Explorar', icon: Search },
   { to: '/relatar', label: 'Relatar', icon: Plus, action: true },
   { to: '/mapa', label: 'Mapa', icon: Map },
   { to: '/perfil', label: 'Perfil', icon: CircleUserRound },
@@ -16,7 +16,7 @@ const itemClass = (isActive) =>
   }`
 
 /**
- * Navegação principal: Início, Estado, + (relatar um problema), Mapa e Perfil.
+ * Navegação principal: Início, Explorar, + (relatar um problema), Mapa e Perfil.
  * Ícone + texto em cada aba. A aba ativa se destaca por forma (pílula com borda),
  * peso do texto e aria-current, não só por cor. O "+" é um botão redondo cheio,
  * porque é uma ação (criar), não um lugar.

@@ -72,7 +72,7 @@ async function main() {
   const url = `mqtt://${options.broker}:${options.port}`
   console.log(`Conectando a ${url} …`)
   const client = mqtt.connect(url, {
-    clientId: `nossa-rua-sim-${Math.random().toString(16).slice(2, 8)}`,
+    clientId: `conecta-cidadao-sim-${Math.random().toString(16).slice(2, 8)}`,
     connectTimeout: 10_000,
     reconnectPeriod: 3_000,
   })

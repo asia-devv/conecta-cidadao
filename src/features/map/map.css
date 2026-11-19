@@ -103,3 +103,19 @@
 .nr-safe-selected {
   outline: 4px solid var(--ink);
 }
+
+/* Halo das vias de trânsito (largo e translúcido, sob a linha principal). */
+.nr-road-halo {
+  stroke-dasharray: none;
+}
+
+/* Ponto do sensor IoT na via (como o marcador do smart-traffic). */
+.nr-sensor {
+  display: block;
+  width: 22px;
+  height: 22px;
+  border: 3px solid var(--surface);
+  border-radius: 9999px;
+  background: var(--primary);
+  box-shadow: 0 0 0 2px var(--ink);
+}

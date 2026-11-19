@@ -9,14 +9,14 @@ export const DEMO_ACCOUNTS = {
     id: 'acc_demo_morador',
     type: 'resident',
     name: 'Marina Demo',
-    email: 'morador@demo.nossarua.test',
+    email: 'morador@demo.conectacidadao.test',
     neighborhoodId: 'sao-paulo/pinheiros',
   },
   admin: {
     id: 'acc_demo_admin',
     type: 'admin',
     name: 'Equipe de moderação (demo)',
-    email: 'admin@demo.nossarua.test',
+    email: 'admin@demo.conectacidadao.test',
   },
 }
 

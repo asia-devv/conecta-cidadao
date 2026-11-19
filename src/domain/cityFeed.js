@@ -3,7 +3,7 @@ import { alertState } from './stateFeed.js'
 
 /**
  * Regras do Início: só alertas e notícias dos municípios da pessoa.
- * (A aba Estado fica com o conteúdo estadual e a agenda de eventos.)
+ * (A aba Explorar fica com o conteúdo estadual e a agenda de eventos.)
  * Funções puras; `now` vem de fora.
  */
 
@@ -14,7 +14,7 @@ const newest = (a, b) => time(b.publishedAt) - time(a.publishedAt)
 /** Um aviso da moderação/administração vale no Início por 7 dias. */
 export const NOTICE_LIFETIME_HOURS = 7 * 24
 
-/** Itens da aba Estado: o que vale para o estado todo e a agenda de eventos. */
+/** Itens da aba Explorar: o que vale para o estado todo e a agenda de eventos. */
 export function isStateTabItem(item) {
   return item.cityId === null || item.kind === 'event'
 }
@@ -80,4 +80,19 @@ export function buildCityFeed(items, notices, { cityIds, now }) {
 /** Para onde o alerta leva no mapa (parâmetros de busca da rota /mapa). */
 export function mapLinkFor(alert) {
   return `/mapa?alerta=${encodeURIComponent(alert.id)}`
+}
+
+/**
+ * Alerta de tempestade para a notificação da tela de bloqueio (demonstração):
+ * o do município da pessoa, se houver; senão, o de São Paulo. Entre os do
+ * município, prefere um ativo e o mais novo. Sem nenhum, devolve null.
+ */
+export function stormAlertFor(items, { cityId, now }) {
+  const storms = items
+    .filter((i) => i.kind === 'alert' && i.alertType === 'storm' && i.target)
+    .filter((i) => time(i.publishedAt) <= now.getTime())
+  const rank = (a) =>
+    (a.cityId === cityId ? 0 : a.cityId === 'sao-paulo' ? 2 : 4) +
+    (alertState(a, now) === 'active' ? 0 : 1)
+  return [...storms].sort((a, b) => rank(a) - rank(b) || newest(a, b))[0] ?? null
 }
