@@ -7,6 +7,7 @@ import {
   Flashlight,
   Lock,
   Signal,
+  TrainFront,
   Wifi,
 } from 'lucide-react'
 import { LogoMark } from '../../components/layout/Logo.jsx'
@@ -14,7 +15,8 @@ import { Icon } from '../../components/ui/Icon.jsx'
 import { APP_NAME } from '../../config/appConfig.js'
 import { useClock } from '../../context/ClockContext.jsx'
 import { useSession } from '../../context/SessionContext.jsx'
-import { mapLinkFor, stormAlertFor } from '../../domain/cityFeed.js'
+import { RAIL_STATIONS } from '../../data/railNetwork.js'
+import { mapLinkFor, railAlertFor, stormAlertFor } from '../../domain/cityFeed.js'
 import { cityIdOf } from '../../domain/places.js'
 import { listStateItems } from '../../services/stateService.js'
 import { useDocumentTitle } from '../../utils/useDocumentTitle.js'
@@ -29,12 +31,13 @@ const dateText = (date) =>
 
 /**
  * Notificação do app, no estilo das notificações do celular. É um link: tocar
- * nela abre o mapa no alerta, com os abrigos e pontos de apoio mais próximos.
+ * nela abre o mapa direto no alerta.
  */
-function StormNotification({ alert }) {
+function Notification({ alert, icon, heading, action, delayMs = 0 }) {
   return (
     <Link
       to={mapLinkFor(alert)}
+      style={{ animationDelay: `${delayMs}ms` }}
       className="flex animate-[notification-in_450ms_ease-out_both] flex-col gap-1 rounded-[22px] bg-surface/95 p-3.5 text-ink shadow-lg backdrop-blur-md"
     >
       <span className="flex items-center gap-2 text-xs text-ink-muted">
@@ -43,20 +46,26 @@ function StormNotification({ alert }) {
         <span>agora</span>
       </span>
       <span className="flex items-center gap-1.5 font-bold">
-        <Icon icon={CloudLightning} size="sm" className="text-danger" />
-        Alerta de tempestade na sua região
+        <Icon icon={icon} size="sm" className="text-danger" />
+        {heading}
       </span>
       <span className="text-sm">
-        {alert.title}. Toque para ver os abrigos mais próximos no mapa.
+        {alert.title}. {action}
       </span>
     </Link>
   )
 }
 
+/** Linhas que passam pelas estações favoritas da pessoa. */
+const favoriteLineIds = (account) =>
+  (account?.favoriteStations ?? []).flatMap((id) => RAIL_STATIONS[id]?.lines ?? [])
+
 /**
- * Simulação da tela de bloqueio do celular com uma notificação do app: um alerta
- * de tempestade no município da pessoa (ou em São Paulo, para visitantes). Tocar
- * na notificação "desbloqueia" e abre o app direto na aba Mapa, no alerta.
+ * Simulação da tela de bloqueio do celular com duas notificações do app:
+ *  - linha de metrô/trem travada (de preferência uma linha que a pessoa usa);
+ *    tocar abre o Mapa no trecho parado, com as rotas alternativas;
+ *  - tempestade no município da pessoa (ou em São Paulo, para visitantes);
+ *    tocar abre o Mapa com os abrigos e pontos de apoio mais próximos.
  *
  * Fica dentro da moldura de smartphone, mas sem cabeçalho nem menu do app. A
  * hora é a do relógio do app (respeita o relógio de demonstração).
@@ -71,7 +80,13 @@ export function LockScreenPage() {
     queryKey: ['lockscreen-items', { offsetMs }],
     queryFn: () => listStateItems(),
   })
-  const alert = query.data ? stormAlertFor(query.data, { cityId, now }) : null
+  const items = query.data ?? []
+  const railAlert = railAlertFor(items, {
+    now,
+    favoriteLineIds: favoriteLineIds(account),
+  })
+  const stormAlert = stormAlertFor(items, { cityId, now })
+  const hasNotifications = Boolean(railAlert || stormAlert)
 
   return (
     <main className="flex h-full flex-col bg-linear-to-b from-primary-ink via-primary to-black px-4 pb-3 text-white">
@@ -98,16 +113,34 @@ export function LockScreenPage() {
       </div>
 
       <section aria-label="Notificações" className="mt-10 flex flex-col gap-2">
-        {alert && <StormNotification alert={alert} />}
+        {railAlert && (
+          <Notification
+            alert={railAlert}
+            icon={TrainFront}
+            heading="Alerta no metrô e trem"
+            action="Toque para ver rotas alternativas no mapa."
+          />
+        )}
+        {stormAlert && (
+          <Notification
+            alert={stormAlert}
+            icon={CloudLightning}
+            heading="Alerta de tempestade na sua região"
+            action="Toque para ver os abrigos mais próximos no mapa."
+            delayMs={railAlert ? 250 : 0}
+          />
+        )}
         {query.isError && (
-          <p className="text-center text-sm">Não foi possível carregar a notificação.</p>
+          <p className="text-center text-sm">
+            Não foi possível carregar as notificações.
+          </p>
         )}
       </section>
 
       <div className="mt-auto flex flex-col gap-3">
-        {alert && (
+        {hasNotifications && (
           <p className="text-center text-sm font-bold">
-            Toque na notificação para abrir o app
+            Toque numa notificação para abrir o app
           </p>
         )}
         <div aria-hidden="true" className="flex items-center justify-between px-6">
@@ -119,7 +152,8 @@ export function LockScreenPage() {
           </span>
         </div>
         <p className="text-center text-xs">
-          Simulação: o app ainda não envia notificações ao celular e o alerta é fictício.{' '}
+          Simulação: o app ainda não envia notificações ao celular e os alertas são
+          fictícios.{' '}
           <Link to="/inicio" className="font-bold underline">
             Abrir o app
           </Link>

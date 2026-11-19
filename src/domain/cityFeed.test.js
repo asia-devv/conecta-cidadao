@@ -4,6 +4,7 @@ import {
   isStateTabItem,
   mapLinkFor,
   noticeToAlert,
+  railAlertFor,
   stormAlertFor,
 } from './cityFeed.js'
 
@@ -123,5 +124,36 @@ describe('stormAlertFor', () => {
   it('ignora alertas "do futuro" e devolve null sem tempestade', () => {
     expect(stormAlertFor([storm('f', 'sao-paulo', { pub: 2 })], { now })).toBeNull()
     expect(stormAlertFor([], { cityId: 'santos', now })).toBeNull()
+  })
+})
+
+describe('railAlertFor', () => {
+  const now = new Date('2026-03-01T12:00:00Z')
+  const railAlert = (id, lineId, level, { pub = -1, exp = 5 } = {}) => ({
+    kind: 'alert',
+    id,
+    cityId: 'sao-paulo',
+    alertType: 'rail',
+    level,
+    target: { type: 'rail', lineId, from: 'a', to: 'b' },
+    publishedAt: new Date(now.getTime() + pub * 3_600_000).toISOString(),
+    expiresAt: new Date(now.getTime() + exp * 3_600_000).toISOString(),
+  })
+  const items = [
+    railAlert('verde', 'metro-2', 'attention', { pub: -0.2 }),
+    railAlert('esmeralda', 'trem-9', 'urgent'),
+    railAlert('azul-velho', 'metro-1', 'urgent', { pub: -9, exp: -1 }),
+  ]
+
+  it('sem linha favorita, prefere o alerta ativo mais urgente', () => {
+    expect(railAlertFor(items, { now }).id).toBe('esmeralda')
+  })
+
+  it('prefere a linha de uma estação favorita da pessoa', () => {
+    expect(railAlertFor(items, { now, favoriteLineIds: ['metro-2'] }).id).toBe('verde')
+  })
+
+  it('sem alerta de linha, devolve null', () => {
+    expect(railAlertFor([], { now })).toBeNull()
   })
 })
