@@ -1,6 +1,6 @@
 /**
  * Proxy HTTP para o FIWARE, rodando dentro do servidor do Vite (`npm run dev` e
- * `npm run preview`). Mesmo desenho do /api/fiware do projeto Vinheria-Full:
+ * `npm run preview`) e, publicado na Vercel, como a função api/fiware.js. Mesmo desenho do /api/fiware do projeto Vinheria-Full:
  *
  *   navegador → POST /api/fiware { servidor, caminho, metodo, body } → FIWARE
  *
@@ -46,7 +46,20 @@ export function validateProxyRequest(payload) {
   return { url: `http://${servidor}${caminho}`, method, body }
 }
 
+/**
+ * Lê o JSON do pedido. Na Vercel o corpo já chega lido em req.body (objeto ou
+ * texto); no servidor do Vite ele ainda está no fluxo da requisição.
+ */
 function readJson(req) {
+  if (req.body !== undefined && req.body !== null) {
+    if (typeof req.body === 'object' && !Buffer.isBuffer(req.body))
+      return Promise.resolve(req.body)
+    try {
+      return Promise.resolve(JSON.parse(String(req.body) || '{}'))
+    } catch {
+      return Promise.reject(new Error('Corpo da requisição inválido'))
+    }
+  }
   return new Promise((resolve, reject) => {
     let size = 0
     const chunks = []

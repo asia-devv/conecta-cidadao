@@ -99,7 +99,7 @@ export default defineConfig([
 
   // Código que roda no Node: servidor do Vite, scripts e configurações.
   {
-    files: ['server/**', 'scripts/**', 'src/test/**', '*.config.js'],
+    files: ['api/**', 'server/**', 'scripts/**', 'src/test/**', '*.config.js'],
     languageOptions: { globals: globals.node },
   },
 ])

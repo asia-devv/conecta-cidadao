@@ -74,7 +74,11 @@ npm run build        # gera dist/
 npm run preview      # serve dist/ em http://localhost:4173
 ```
 
-O proxy `/api/fiware` só existe em `npm run dev` e `npm run preview`. Um build estático publicado em outro servidor funciona normalmente, mas sem os sensores IoT reais (as vias do mapa ficam cinza, "Sem dados").
+O proxy `/api/fiware` existe em `npm run dev`, em `npm run preview` e na Vercel (função `api/fiware.js`). Um build estático publicado em outro servidor funciona normalmente, mas sem os sensores IoT reais (as vias do mapa ficam cinza, "Sem dados").
+
+### Publicar na Vercel
+
+O repositório já vem pronto: o `vercel.json` usa o build do Vite, publica a pasta `dist` e manda qualquer rota do app (como `/mapa` ou `/tela-de-bloqueio`) para o `index.html`; a função `api/fiware.js` reaproveita o proxy de `server/`. Nas variáveis de ambiente do projeto na Vercel, defina `VITE_FIWARE_SERVER` com o IPv4 do FIWARE (por exemplo `184.195.90.61`, o Orion usado pelo smart-traffic) e faça um novo deploy, porque a variável entra no build. O servidor FIWARE precisa aceitar conexões vindas da internet nas portas 1026 e 4041.
 
 ### Contas de demonstração
 
@@ -98,6 +102,7 @@ O proxy `/api/fiware` só existe em `npm run dev` e `npm run preview`. Um build 
 ## Estrutura de diretórios
 
 ```
+├─ api/                  função da Vercel: /api/fiware (usa o proxy de server/)
 ├─ docs/                 guias de apoio e coleção do Postman
 ├─ public/               arquivos estáticos (favicon)
 ├─ scripts/              simulador MQTT de sensores (Node)

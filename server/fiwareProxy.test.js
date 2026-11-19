@@ -90,4 +90,25 @@ describe('handleFiwareProxy', () => {
     expect(status).toBe(502)
     expect(JSON.parse(payload)).toMatchObject({ causa: 'ECONNREFUSED' })
   })
+
+  it('na Vercel, aceita o corpo já lido em req.body (objeto ou texto)', async () => {
+    const fetchMock = vi.fn(async () => new Response('{"orion":{}}', { status: 200 }))
+    vi.stubGlobal('fetch', fetchMock)
+    for (const body of [
+      { servidor: '10.0.0.5:1026', caminho: '/version' },
+      '{"servidor":"10.0.0.5:1026","caminho":"/version"}',
+    ]) {
+      let done
+      const result = new Promise((r) => (done = r))
+      const res = {
+        statusCode: 200,
+        setHeader() {},
+        end: (payload) => done({ status: res.statusCode, payload }),
+      }
+      await handleFiwareProxy({ method: 'POST', body }, res)
+      expect((await result).status).toBe(200)
+    }
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(fetchMock.mock.calls[0][0]).toBe('http://10.0.0.5:1026/version')
+  })
 })
