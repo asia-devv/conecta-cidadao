@@ -202,3 +202,13 @@ O proxy (`server/fiwareProxy.js`) só aceita IPv4 nas portas 1026, 4041 e 8666, 
 - O mapa usa tiles do OpenStreetMap, adequados só para demonstração.
 - O FIWARE foi verificado com testes automatizados e uma instalação mínima, não com a stack Docker completa.
 - `npm audit` aponta alertas de severidade alta em `picomatch`, usado por ferramentas de desenvolvimento (Vite e Vitest). A correção sugerida rebaixa o Vitest para uma versão incompatível, por isso não foi aplicada.
+
+- ## Equipe
+
+   | Nome                 | RM                                                                 |
+   | -------------------- | ------------------------------------------------------------------ |
+   | Vinycius Lu          | 569300                                                             |
+   | Matheus Tamataya     | 572842                                                             |
+   | Leonardo Daniel      | 574142                                                             |
+   | Bernardo Kim         | 568968                                                             |
+   | Alyson Aquino        | 574125                                                             |
