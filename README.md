@@ -1,5 +1,7 @@
 # Conecta Cidadão
 
+Link do Deploy: [Conecta Cidadão - site ](https://conecta-cidadao-wheat.vercel.app/)
+
 Protótipo web, pensado primeiro para o celular, de serviços urbanos para moradores do estado de São Paulo. Reúne:
 
 - alertas e notícias da cidade;
